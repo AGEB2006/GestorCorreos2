@@ -15,3 +15,5 @@ CREATE TABLE IF NOT EXISTS Correos (
 
 conexion.commit()
 print("Base de datos inicializada correctamente.")
+
+#probando a ver si ya queda el proyecto listo para subir a github
