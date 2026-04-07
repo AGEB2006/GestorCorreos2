@@ -21,3 +21,5 @@ print("Base de datos inicializada correctamente.")
 "gael es la cabra"
 
 "ieshua puto"
+
+"ieshua pendejo"
