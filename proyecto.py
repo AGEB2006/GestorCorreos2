@@ -11,6 +11,7 @@ CREATE TABLE IF NOT EXISTS Correos (
     asunto TEXT, 
     mensaje TEXT
 )
+               
 """)
 
 conexion.commit()
