@@ -1,4 +1,5 @@
 from customtkinter import *
+from PIL import Image
 
 Ventana = CTk()
 Ventana.geometry("1200x700+250+50")
@@ -9,5 +10,13 @@ Fila = CTkFrame(Ventana, width=3000, height=120,  fg_color="#2B2B2B", corner_rad
 Fila.place( x = 0, y = 0, relwidth=1)
 Msj= CTkFrame (Ventana, fg_color = "blue", corner_radius=0)
 Msj.place( x = 126, y = 120, relwidth=0.985, relheight=1)
+
+Enviar = CTkImage(light_image=Image.open("tu_imagen.png"),
+                       dark_image=Image.open("tu_imagen.png"),
+                       size=(30, 30))
+
+
+
+
 
 Ventana.mainloop()
