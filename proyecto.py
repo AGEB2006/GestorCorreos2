@@ -26,3 +26,4 @@ print("Base de datos inicializada correctamente.")
 "ieshua pendejo"
 
 "gael es un reverendo pendejo alv putoputoputopuuuuuuuuuuuuuuuuuuuuuuuuuuutooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo"
+"hola mundo"
