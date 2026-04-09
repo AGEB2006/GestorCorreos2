@@ -29,7 +29,8 @@ def ocultar_tooltip(event):
     tooltip.place_forget()
 Boton_Enviar.bind("<Enter>", mostrar_tooltip)
 Boton_Enviar.bind("<Leave>", ocultar_tooltip)
-#---------------------------------------------------------------------------------------------------
+
+
 Recibido = CTkImage(light_image=Image.open("recibido.png"),
                        dark_image=Image.open("recibido.png"),
                        size=(90, 70))
