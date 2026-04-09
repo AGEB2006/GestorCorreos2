@@ -93,8 +93,8 @@ cuenta = CTkImage(light_image=Image.open("cuenta.png"),
                        dark_image=Image.open("cuenta.png"),
                        size=(70, 80))
 Boton_Cuenta = CTkButton(Ventana, text="", image=cuenta, fg_color="#2B2B2B", hover_color="#3B3B3B", 
-                            corner_radius=0,width=0,height=0)
-Boton_Cuenta.place(x=1350, y=10)
+                            corner_radius=-10,width=-30,height=-30)
+Boton_Cuenta.place(x=1450, y=10)
 tooltip5 = CTkLabel(Ventana, text="Cuenta", fg_color="#2B2B2B", text_color="white", corner_radius=6)
 def mostrar_tooltip5(event):
     x = Boton_Cuenta.winfo_rootx() - Ventana.winfo_rootx()
