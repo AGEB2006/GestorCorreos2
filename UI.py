@@ -70,5 +70,24 @@ def ocultar_tooltip3(event):
 Boton_Borrar.bind("<Enter>", mostrar_tooltip3)
 Boton_Borrar.bind("<Leave>", ocultar_tooltip3)
 #---------------------------------------------------------------------------------------------------
+contactos = CTkImage(light_image=Image.open("contactos.png"),
+                       dark_image=Image.open("contactos.png"),
+                       size=(70, 70))
+Boton_Contactos = CTkButton(Ventana, text="", image=contactos, fg_color="#2B2B2B", hover_color="#3B3B3B",
+                         corner_radius=0,width=0,height=0)
+Boton_Contactos.place(x=25, y=360)
+tooltip4 = CTkLabel(Ventana, text="Contactos", fg_color="#2B2B2B", text_color="white", corner_radius=6)
+
+def mostrar_tooltip4(event):
+    x = Boton_Contactos.winfo_rootx() - Ventana.winfo_rootx()
+    y = Boton_Contactos.winfo_rooty() - Ventana.winfo_rooty()
+    tooltip4.place(x=x + Boton_Contactos.winfo_width()//2 - 10,  
+                   y=y + Boton_Contactos.winfo_height() + -40)   
+    tooltip4.lift()  
+def ocultar_tooltip4(event):
+    tooltip4.place_forget()
+Boton_Contactos.bind("<Enter>", mostrar_tooltip4)
+Boton_Contactos.bind("<Leave>", ocultar_tooltip4)
+#---------------------------------------------------------------------------------------------------
 
 Ventana.mainloop()
