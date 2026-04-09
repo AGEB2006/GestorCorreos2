@@ -89,5 +89,24 @@ def ocultar_tooltip4(event):
 Boton_Contactos.bind("<Enter>", mostrar_tooltip4)
 Boton_Contactos.bind("<Leave>", ocultar_tooltip4)
 #---------------------------------------------------------------------------------------------------
+cuenta = CTkImage(light_image=Image.open("cuenta.png"),
+                       dark_image=Image.open("cuenta.png"),
+                       size=(70, 80))
+Boton_Cuenta = CTkButton(Ventana, text="", image=cuenta, fg_color="#2B2B2B", hover_color="#3B3B3B", 
+                            corner_radius=0,width=0,height=0)
+Boton_Cuenta.place(x=1350, y=10)
+tooltip5 = CTkLabel(Ventana, text="Cuenta", fg_color="#2B2B2B", text_color="white", corner_radius=6)
+def mostrar_tooltip5(event):
+    x = Boton_Cuenta.winfo_rootx() - Ventana.winfo_rootx()
+    y = Boton_Cuenta.winfo_rooty() - Ventana.winfo_rooty()
+    tooltip5.place(x=x + Boton_Cuenta.winfo_width()//2 - 10,  
+                   y=y + Boton_Cuenta.winfo_height() + -40)   
+    tooltip5.lift()  
+def ocultar_tooltip5(event):
+    tooltip5.place_forget()
+Boton_Cuenta.bind("<Enter>", mostrar_tooltip5)
+Boton_Cuenta.bind("<Leave>", ocultar_tooltip5)
+
+
 
 Ventana.mainloop()
