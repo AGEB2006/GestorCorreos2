@@ -1,64 +1,70 @@
 import sqlite3
 
-conexion = sqlite3.connect("BaseDeDatos.db")
-cursor = conexion.cursor()
-
-cursor.execute("""
-CREATE TABLE IF NOT EXISTS Correos (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    correo TEXT UNIQUE NOT NULL,
-    contraseña TEXT NOT NULL,
-    nombre TEXT
-)
-               
-""")
-
-conexion.commit()
-print("Base de datos inicializada correctamente.")
+DB_PATH = "BaseDeDatos.db"
 
 
-def registrar(correo, contraseña, nombre):
-    conexion = sqlite3.connect("BaseDeDatos.db")
-    cursor = conexion.cursor()
+def init_db():
+    with sqlite3.connect(DB_PATH) as conexion:
+        cursor = conexion.cursor()
+        cursor.execute(
+            """
+            CREATE TABLE IF NOT EXISTS Correos (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                correo TEXT UNIQUE NOT NULL,
+                "contraseña" TEXT NOT NULL,
+                nombre TEXT
+            )
+            """
+        )
 
+
+def normalizar_tabla():
+    with sqlite3.connect(DB_PATH) as conexion:
+        cursor = conexion.cursor()
+        cursor.execute("PRAGMA table_info(Correos)")
+        columnas = [columna[1] for columna in cursor.fetchall()]
+
+        if "contraseÃ±a" in columnas and "contraseña" not in columnas:
+            cursor.execute('ALTER TABLE Correos RENAME COLUMN "contraseÃ±a" TO "contraseña"')
+
+
+def registrar(correo, contrasena, nombre):
     try:
-        cursor.execute("""
-        INSERT INTO Correos (correo, contraseña, nombre)
-        VALUES (?, ?, ?)
-        """, (correo, contraseña, nombre))
-
-        conexion.commit()
-        print("Usuario registrado correctamente ")
-
+        with sqlite3.connect(DB_PATH) as conexion:
+            cursor = conexion.cursor()
+            cursor.execute(
+                'INSERT INTO Correos (correo, "contraseña", nombre) VALUES (?, ?, ?)',
+                (correo, contrasena, nombre),
+            )
+        return True
     except sqlite3.IntegrityError:
-        print("Ese correo ya está registrado en la base de datos.")
+        return False
 
-    conexion.close()
 
-def login(correo, contraseña):
-    conexion = sqlite3.connect("BaseDeDatos.db")  # MISMA BD
-    cursor = conexion.cursor()
+def obtener_usuario_por_credenciales(correo, contrasena):
+    with sqlite3.connect(DB_PATH) as conexion:
+        cursor = conexion.cursor()
+        cursor.execute(
+            'SELECT id, correo, "contraseña", nombre FROM Correos WHERE correo = ?',
+            (correo,),
+        )
+        usuario = cursor.fetchone()
 
-    cursor.execute("""
-    SELECT id, contraseña FROM Correos WHERE correo = ?
-    """, (correo,))
-
-    usuario = cursor.fetchone()
-
-    if usuario:
-        if usuario[1] == contraseña:
-            print("Login correcto ")
-            return usuario[0]
-        else:
-            print("Contraseña incorrecta ")
-    else:
-        print("Usuario no existe ")
-
-    conexion.close()
+    if usuario and usuario[2] == contrasena:
+        return {
+            "id": usuario[0],
+            "correo": usuario[1],
+            "nombre": usuario[3] or "Usuario",
+        }
     return None
 
-registrar("inge@gmail.com", "1234", "Inge")
 
-user_id = login("inge@gmail.com", "1234")
+def login(correo, contrasena):
+    usuario = obtener_usuario_por_credenciales(correo, contrasena)
+    if usuario:
+        return usuario["id"]
+    return None
 
-print("ID del usuario:", user_id)
+
+init_db()
+normalizar_tabla()

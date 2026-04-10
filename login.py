@@ -1,7 +1,13 @@
 import os
+import subprocess
+import sys
 import tkinter as tk
+from tkinter import messagebox
+
 from customtkinter import *
-from PIL import Image, ImageSequence, ImageTk
+from PIL import Image, ImageTk
+
+from bd import obtener_usuario_por_credenciales
 
 set_appearance_mode("dark")
 
@@ -17,7 +23,7 @@ def poner_fondo(ruta):
     if not os.path.exists(ruta):
         return
 
-    fondo = tk.Label(login, bd=0, highlightthickness=0, bg="#111111") 
+    fondo = tk.Label(login, bd=0, highlightthickness=0, bg="#111111")
     fondo.place(x=0, y=0, relwidth=1, relheight=1)
     fondo.lower()
 
@@ -38,7 +44,6 @@ def poner_fondo(ruta):
 
 poner_fondo(BACKGROUND_PATH)
 
-
 contenedor = CTkFrame(
     login,
     width=450,
@@ -49,18 +54,16 @@ contenedor = CTkFrame(
 contenedor.place(relx=0.5, rely=0.5, anchor="center")
 contenedor.pack_propagate(False)
 
-
 title = CTkLabel(
     login,
-    text="Iniciar Sesión",
+    text="Iniciar Sesion",
     text_color="#FFFFFF",
     font=CTkFont(size=60, weight="bold"),
     fg_color="transparent",
-    bg_color="transparent"
+    bg_color="transparent",
 )
 title.place(relx=0.5, rely=0.5, anchor="center", y=-230)
-title.lift()  
-
+title.lift()
 
 correo_label = CTkLabel(contenedor, text="Correo:", text_color="#111111", fg_color="transparent")
 correo_label.pack(pady=(25, 8))
@@ -73,41 +76,64 @@ correo_entry = CTkEntry(
 )
 correo_entry.pack(pady=5)
 
-contraseña_label = CTkLabel(contenedor, text="Contraseña:", text_color="#111111", fg_color="transparent")
-contraseña_label.pack(pady=(12, 8))
+contrasena_label = CTkLabel(contenedor, text="Contrasena:", text_color="#111111", fg_color="transparent")
+contrasena_label.pack(pady=(12, 8))
 
-contraseña_entry = CTkEntry(
+contrasena_entry = CTkEntry(
     contenedor,
     width=260,
     fg_color="#FFFFFF",
     text_color="#111111",
     show="*",
 )
-contraseña_entry.pack(pady=5)
+contrasena_entry.pack(pady=5)
 
 
 def iniciar_sesion():
-    correo = correo_entry.get()
-    contraseña = contraseña_entry.get()
-    print(f"Correo: {correo}, Contraseña: {contraseña}")
+    correo = correo_entry.get().strip()
+    contrasena = contrasena_entry.get().strip()
+
+    if not correo or not contrasena:
+        messagebox.showwarning("Campos vacios", "Ingresa tu correo y tu contrasena.")
+        return
+
+    usuario = obtener_usuario_por_credenciales(correo, contrasena)
+    if not usuario:
+        messagebox.showerror("Acceso denegado", "El correo o la contrasena no son correctos.")
+        return
+
+    login.destroy()
+    subprocess.Popen(
+        [
+            sys.executable,
+            "UI.py",
+            str(usuario["id"]),
+            usuario["nombre"],
+            usuario["correo"],
+        ]
+    )
+
 
 def crear_cuenta():
-    print("Crear cuenta")
+    login.destroy()
+    subprocess.Popen([sys.executable, "registro.py"])
 
-def recuperar_contraseña():
-    print("Recuperar contraseña")
+
+def recuperar_contrasena():
+    messagebox.showinfo("Recuperar contrasena", "Esta funcion aun no esta implementada.")
+
 
 iniciar_sesion_button = CTkButton(
     contenedor,
-    text="Iniciar Sesión",
-    command=iniciar_sesion
+    text="Iniciar Sesion",
+    command=iniciar_sesion,
 )
 iniciar_sesion_button.pack(pady=20)
 
-contraseña_olvidada = CTkButton(
+contrasena_olvidada = CTkButton(
     contenedor,
-    text="¿Olvidaste tu contraseña?",
-    command=recuperar_contraseña,
+    text="Olvidaste tu contrasena?",
+    command=recuperar_contrasena,
     width=220,
     height=32,
     corner_radius=10,
@@ -116,7 +142,7 @@ contraseña_olvidada = CTkButton(
     border_width=0,
     text_color="#111111",
 )
-contraseña_olvidada.pack(pady=(0, 10))
+contrasena_olvidada.pack(pady=(0, 10))
 
 crear_cuenta_button = CTkButton(
     contenedor,
