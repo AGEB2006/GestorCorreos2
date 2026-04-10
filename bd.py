@@ -47,12 +47,12 @@ def login(correo, contraseña):
 
     if usuario:
         if usuario[1] == contraseña:
-            print("Login correcto 🔥")
+            print("Login correcto ")
             return usuario[0]
         else:
-            print("Contraseña incorrecta ❌")
+            print("Contraseña incorrecta ")
     else:
-        print("Usuario no existe ❌")
+        print("Usuario no existe ")
 
     conexion.close()
     return None
