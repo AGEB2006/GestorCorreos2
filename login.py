@@ -8,6 +8,7 @@ from customtkinter import *
 from PIL import Image, ImageTk
 
 from bd import obtener_usuario_por_credenciales
+from recuperar import abrir_recuperacion
 
 set_appearance_mode("dark")
 
@@ -120,7 +121,7 @@ def crear_cuenta():
 
 
 def recuperar_contrasena():
-    messagebox.showinfo("Recuperar contrasena", "Esta funcion aun no esta implementada.")
+    abrir_recuperacion(login, correo_entry, contrasena_entry)
 
 
 iniciar_sesion_button = CTkButton(
@@ -132,7 +133,7 @@ iniciar_sesion_button.pack(pady=20)
 
 contrasena_olvidada = CTkButton(
     contenedor,
-    text="Olvidaste tu contrasena?",
+    text="Olvide mi contrasena",
     command=recuperar_contrasena,
     width=220,
     height=32,

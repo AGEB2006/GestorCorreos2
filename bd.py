@@ -3,38 +3,71 @@ import sqlite3
 DB_PATH = "BaseDeDatos.db"
 
 
+def conectar():
+    return sqlite3.connect(DB_PATH)
+
+
+def obtener_columna_contrasena(cursor):
+    cursor.execute("PRAGMA table_info(Correos)")
+    columnas = [columna[1] for columna in cursor.fetchall()]
+
+    for nombre in columnas:
+        if "contrase" in nombre.lower():
+            return nombre
+    return "contrasena"
+
+
 def init_db():
-    with sqlite3.connect(DB_PATH) as conexion:
+    with conectar() as conexion:
         cursor = conexion.cursor()
         cursor.execute(
             """
             CREATE TABLE IF NOT EXISTS Correos (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 correo TEXT UNIQUE NOT NULL,
-                "contraseña" TEXT NOT NULL,
-                nombre TEXT
+                contrasena TEXT NOT NULL,
+                nombre TEXT,
+                telefono TEXT,
+                pregunta_seguridad TEXT,
+                respuesta_seguridad TEXT
             )
             """
         )
 
 
 def normalizar_tabla():
-    with sqlite3.connect(DB_PATH) as conexion:
+    with conectar() as conexion:
         cursor = conexion.cursor()
         cursor.execute("PRAGMA table_info(Correos)")
         columnas = [columna[1] for columna in cursor.fetchall()]
 
-        if "contraseÃ±a" in columnas and "contraseña" not in columnas:
-            cursor.execute('ALTER TABLE Correos RENAME COLUMN "contraseÃ±a" TO "contraseña"')
+        if "telefono" not in columnas:
+            cursor.execute("ALTER TABLE Correos ADD COLUMN telefono TEXT")
+        if "pregunta_seguridad" not in columnas:
+            cursor.execute("ALTER TABLE Correos ADD COLUMN pregunta_seguridad TEXT")
+        if "respuesta_seguridad" not in columnas:
+            cursor.execute("ALTER TABLE Correos ADD COLUMN respuesta_seguridad TEXT")
+
+        columna_contrasena = obtener_columna_contrasena(cursor)
+        if columna_contrasena != "contrasena":
+            try:
+                cursor.execute(f'ALTER TABLE Correos RENAME COLUMN "{columna_contrasena}" TO contrasena')
+            except sqlite3.OperationalError:
+                pass
 
 
-def registrar(correo, contrasena, nombre):
+def registrar(correo, contrasena, nombre, telefono, pregunta_seguridad, respuesta_seguridad):
     try:
-        with sqlite3.connect(DB_PATH) as conexion:
+        with conectar() as conexion:
             cursor = conexion.cursor()
+            columna_contrasena = obtener_columna_contrasena(cursor)
             cursor.execute(
-                'INSERT INTO Correos (correo, "contraseña", nombre) VALUES (?, ?, ?)',
-                (correo, contrasena, nombre),
+                f"""
+                INSERT INTO Correos (
+                    correo, "{columna_contrasena}", nombre, telefono, pregunta_seguridad, respuesta_seguridad
+                ) VALUES (?, ?, ?, ?, ?, ?)
+                """,
+                (correo, contrasena, nombre, telefono, pregunta_seguridad, respuesta_seguridad.strip().lower()),
             )
         return True
     except sqlite3.IntegrityError:
@@ -42,10 +75,11 @@ def registrar(correo, contrasena, nombre):
 
 
 def obtener_usuario_por_credenciales(correo, contrasena):
-    with sqlite3.connect(DB_PATH) as conexion:
+    with conectar() as conexion:
         cursor = conexion.cursor()
+        columna_contrasena = obtener_columna_contrasena(cursor)
         cursor.execute(
-            'SELECT id, correo, "contraseña", nombre FROM Correos WHERE correo = ?',
+            f'SELECT id, correo, "{columna_contrasena}", nombre FROM Correos WHERE correo = ?',
             (correo,),
         )
         usuario = cursor.fetchone()
@@ -57,6 +91,46 @@ def obtener_usuario_por_credenciales(correo, contrasena):
             "nombre": usuario[3] or "Usuario",
         }
     return None
+
+
+def obtener_pregunta_seguridad(correo):
+    with conectar() as conexion:
+        cursor = conexion.cursor()
+        cursor.execute(
+            "SELECT pregunta_seguridad FROM Correos WHERE correo = ?",
+            (correo,),
+        )
+        fila = cursor.fetchone()
+
+    if fila and fila[0]:
+        return fila[0]
+    return None
+
+
+def verificar_respuesta_seguridad(correo, respuesta):
+    with conectar() as conexion:
+        cursor = conexion.cursor()
+        cursor.execute(
+            "SELECT respuesta_seguridad FROM Correos WHERE correo = ?",
+            (correo,),
+        )
+        fila = cursor.fetchone()
+
+    if not fila or not fila[0]:
+        return False
+    return fila[0].strip().lower() == respuesta.strip().lower()
+
+
+def actualizar_contrasena(correo, nueva_contrasena):
+    with conectar() as conexion:
+        cursor = conexion.cursor()
+        columna_contrasena = obtener_columna_contrasena(cursor)
+        cursor.execute(
+            f'UPDATE Correos SET "{columna_contrasena}" = ? WHERE correo = ?',
+            (nueva_contrasena, correo),
+        )
+        conexion.commit()
+        return cursor.rowcount > 0
 
 
 def login(correo, contrasena):

@@ -11,6 +11,12 @@ from bd import registrar
 
 set_appearance_mode("dark")
 
+PREGUNTAS_SEGURIDAD = [
+    "Como se llamo tu primera mascota?",
+    "Cual es el nombre de tu papa?",
+    "Cual es tu comida favorita?",
+]
+
 registro = CTk()
 registro.geometry("1200x700+250+50")
 registro.title("Registro")
@@ -44,15 +50,14 @@ def poner_fondo(ruta):
 
 poner_fondo(BACKGROUND_PATH)
 
-contenedor = CTkFrame(
+contenedor = CTkScrollableFrame(
     registro,
     width=450,
-    height=500,
+    height=540,
     corner_radius=16,
     fg_color="#FFFFFF",
 )
 contenedor.place(relx=0.5, rely=0.5, anchor="center")
-contenedor.pack_propagate(False)
 
 title = CTkLabel(
     registro,
@@ -62,7 +67,7 @@ title = CTkLabel(
     fg_color="transparent",
     bg_color="transparent",
 )
-title.place(relx=0.5, rely=0.5, anchor="center", y=-260)
+title.place(relx=0.5, rely=0.5, anchor="center", y=-290)
 title.lift()
 
 nombre_label = CTkLabel(contenedor, text="Nombre:", text_color="#111111", fg_color="transparent")
@@ -95,6 +100,19 @@ confirmar_label.pack(pady=(10, 5))
 confirmar_entry = CTkEntry(contenedor, width=260, show="*")
 confirmar_entry.pack()
 
+pregunta_label = CTkLabel(contenedor, text="Pregunta de seguridad:", text_color="#111111", fg_color="transparent")
+pregunta_label.pack(pady=(10, 5))
+
+pregunta_var = StringVar(value=PREGUNTAS_SEGURIDAD[0])
+pregunta_menu = CTkOptionMenu(contenedor, values=PREGUNTAS_SEGURIDAD, variable=pregunta_var, width=260)
+pregunta_menu.pack()
+
+respuesta_label = CTkLabel(contenedor, text="Respuesta de seguridad:", text_color="#111111", fg_color="transparent")
+respuesta_label.pack(pady=(10, 5))
+
+respuesta_entry = CTkEntry(contenedor, width=260)
+respuesta_entry.pack()
+
 
 def registrar_usuario():
     nombre = nombre_entry.get().strip()
@@ -102,8 +120,10 @@ def registrar_usuario():
     telefono = telefono_entry.get().strip()
     contrasena = contrasena_entry.get().strip()
     confirmar = confirmar_entry.get().strip()
+    pregunta = pregunta_var.get().strip()
+    respuesta = respuesta_entry.get().strip()
 
-    if not nombre or not correo or not telefono or not contrasena or not confirmar:
+    if not nombre or not correo or not telefono or not contrasena or not confirmar or not pregunta or not respuesta:
         messagebox.showwarning("Campos vacios", "Completa todos los campos antes de registrarte.")
         return
 
@@ -111,7 +131,7 @@ def registrar_usuario():
         messagebox.showerror("Error", "Las contrasenas no coinciden.")
         return
 
-    creado = registrar(correo, contrasena, nombre)
+    creado = registrar(correo, contrasena, nombre, telefono, pregunta, respuesta)
     if not creado:
         messagebox.showerror("Correo ya registrado", "Ese correo ya existe en la base de datos.")
         return
@@ -130,7 +150,7 @@ btn_registrar = CTkButton(
     text="Registrarse",
     command=registrar_usuario,
 )
-btn_registrar.pack(pady=20)
+btn_registrar.pack(pady=(20, 12))
 
 btn_volver = CTkButton(
     contenedor,
@@ -139,6 +159,6 @@ btn_volver = CTkButton(
     fg_color="#5A5A5A",
     hover_color="#474747",
 )
-btn_volver.pack()
+btn_volver.pack(pady=(0, 20))
 
 registro.mainloop()
