@@ -21,6 +21,8 @@ Ventana.grid_columnconfigure(1, weight=1)
 
 Fila = CTkFrame(Ventana, fg_color="#2B2B2B", height=100, corner_radius=-1, border_width=-1)
 Fila.grid(row=0, column=0, columnspan=2, sticky="nsew", padx=0, pady=0)
+Fila.grid_columnconfigure(0, weight=1)
+Fila.grid_columnconfigure(1, weight=0)
 
 Pilar = CTkFrame(Ventana, width=100, height=100, fg_color="#2B2B2B", corner_radius=-1, border_width=-1)
 Pilar.grid(row=1, column=0, sticky="nsew", padx=0, pady=0)
@@ -34,8 +36,7 @@ info_usuario = CTkLabel(
     text_color="white",
     font=CTkFont(size=20, weight="bold"),
 )
-info_usuario.place(x=20, y=35)
-
+info_usuario.grid(row=0, column=0, padx=20, pady=20, sticky="w")
 Enviar = CTkImage(
     light_image=Image.open("avion2.png"),
     dark_image=Image.open("avion2.png"),
@@ -91,7 +92,7 @@ Borrar = CTkImage(
 )
 Boton_Borrar = CTkButton(Pilar, text="", image=Borrar, fg_color="#2B2B2B", hover_color="#3B3B3B", corner_radius=0, width=0, height=0)
 Boton_Borrar.place(x=10, y=200)
-tooltip3 = CTkLabel(Pilar, text="Borrar", fg_color="#2B2B2B", text_color="white", corner_radius=6)
+tooltip3 = CTkLabel(Pilar, text="Papelería", fg_color="#2B2B2B", text_color="white", corner_radius=6)
 
 
 def mostrar_tooltip3(event):
@@ -99,7 +100,6 @@ def mostrar_tooltip3(event):
     y = Boton_Borrar.winfo_rooty() - Pilar.winfo_rooty()
     tooltip3.place(x=x + Boton_Borrar.winfo_width() // 2 - tooltip3.winfo_width() // 2, y=y + Boton_Borrar.winfo_height() - 40)
     tooltip3.lift()
-
 
 def ocultar_tooltip3(event):
     tooltip3.place_forget()
@@ -116,20 +116,34 @@ Contactos = CTkImage(
 Boton_Contactos = CTkButton(Pilar, text="", image=Contactos, fg_color="#2B2B2B", hover_color="#3B3B3B", corner_radius=0, width=0, height=0)
 Boton_Contactos.place(x=10, y=300)
 tooltip4 = CTkLabel(Pilar, text="Contactos", fg_color="#2B2B2B", text_color="white", corner_radius=6)
-
-
 def mostrar_tooltip4(event):
     x = Boton_Contactos.winfo_rootx() - Pilar.winfo_rootx()
     y = Boton_Contactos.winfo_rooty() - Pilar.winfo_rooty()
     tooltip4.place(x=x + Boton_Contactos.winfo_width() // 2 - tooltip4.winfo_width() // 2, y=y + Boton_Contactos.winfo_height() - 40)
     tooltip4.lift()
 
-
 def ocultar_tooltip4(event):
     tooltip4.place_forget()
-
 
 Boton_Contactos.bind("<Enter>", mostrar_tooltip4)
 Boton_Contactos.bind("<Leave>", ocultar_tooltip4)
 
+
+Cuenta = CTkImage(
+    light_image=Image.open("cuenta.png"),
+    dark_image=Image.open("cuenta.png"),
+    size=(70, 70),
+)
+Boton_Cuenta = CTkButton(Fila, text="", image=Cuenta, fg_color="#2B2B2B", hover_color="#3B3B3B", corner_radius=0, width=0, height=0)
+Boton_Cuenta.grid(row=0, column=1, padx=20, pady=20, sticky="e") 
+tooltip5 = CTkLabel(Fila, text="Cuenta", fg_color="#2B2B2B", text_color="white", corner_radius=6)
+def mostrar_tooltip5(event):
+    x = Boton_Cuenta.winfo_rootx() - Fila.winfo_rootx()
+    y = Boton_Cuenta.winfo_rooty() - Fila.winfo_rooty()
+    tooltip5.place(x=x + Boton_Cuenta.winfo_width() // 2 - tooltip5.winfo_width() // 2, y=y + Boton_Cuenta.winfo_height() + 0 )
+    tooltip5.lift()
+def ocultar_tooltip5(event):
+    tooltip5.place_forget()
+Boton_Cuenta.bind("<Enter>", mostrar_tooltip5)  
+Boton_Cuenta.bind("<Leave>", ocultar_tooltip5)
 Ventana.mainloop()
