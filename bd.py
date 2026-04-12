@@ -48,13 +48,6 @@ def normalizar_tabla():
         if "respuesta_seguridad" not in columnas:
             cursor.execute("ALTER TABLE Correos ADD COLUMN respuesta_seguridad TEXT")
 
-        columna_contrasena = obtener_columna_contrasena(cursor)
-        if columna_contrasena != "contraseña":
-            try:
-                cursor.execute(f'ALTER TABLE Correos RENAME COLUMN "{columna_contrasena}" TO contraseña')
-            except sqlite3.OperationalError:
-                pass
-
 
 def registrar(correo, contrasena, nombre, telefono, pregunta_seguridad, respuesta_seguridad):
     try:
@@ -160,7 +153,15 @@ def crear_tabla_mensajes():
             )
             """
         )
-        
+def obtener_usuario_por_correo(correo):
+    with conectar() as conexion:
+        cursor = conexion.cursor()
+        cursor.execute(
+            "SELECT id FROM Correos WHERE correo = ?",
+            (correo,)
+        )
+        resultado = cursor.fetchone()
+        return resultado[0] if resultado else None
 
 
 

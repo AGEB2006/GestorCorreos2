@@ -1,8 +1,12 @@
 import sys
-from Clases import *
+from tkinter import messagebox
+
+from Clases import Tooltip
 from customtkinter import *
 from PIL import Image
-from Funciones import *
+
+from Funciones import agregar_mensaje, enviar_mensaje, guardar_borrador, obtener_borradores, obtener_mensajes_recibidos
+from bd import obtener_usuario_por_correo
 
 
 def obtener_datos_usuario():
@@ -32,7 +36,6 @@ Msj = CTkFrame(Ventana, fg_color="white", corner_radius=-1, border_width=-1)
 Msj.grid(row=1, column=1, sticky="nsew", padx=0, pady=0)
 Contenedor_Msj = CTkScrollableFrame(Msj, fg_color="transparent", border_width=0, corner_radius=0)
 Contenedor_Msj.pack(fill="both", expand=True)
-agregar_mensaje(Contenedor_Msj, "Hola", "recibido")
 
 info_usuario = CTkLabel(
     Fila,
@@ -43,6 +46,87 @@ info_usuario = CTkLabel(
 info_usuario.grid(row=0, column=0, padx=20, pady=20, sticky="w")
 
 
+def limpiar_contenedor_mensajes():
+    for widget in Contenedor_Msj.winfo_children():
+        widget.destroy()
+
+
+def mostrar_mensajes_recibidos():
+    limpiar_contenedor_mensajes()
+    mensajes = obtener_mensajes_recibidos(int(usuario_id)) if str(usuario_id).isdigit() else []
+
+    if not mensajes:
+        agregar_mensaje(Contenedor_Msj, "No tienes mensajes recibidos.", "recibido")
+        return
+
+    for _, _, remitente, asunto, contenido, fecha, _ in mensajes:
+        texto = f"De: {remitente}\nAsunto: {asunto}\n\n{contenido}\n\n{fecha}"
+        agregar_mensaje(Contenedor_Msj, texto, "recibido")
+
+
+def mostrar_borradores():
+    limpiar_contenedor_mensajes()
+    borradores = obtener_borradores(int(usuario_id)) if str(usuario_id).isdigit() else []
+
+    if not borradores:
+        agregar_mensaje(Contenedor_Msj, "No tienes borradores guardados.", "enviado")
+        return
+
+    for _, asunto, contenido, fecha in borradores:
+        texto = f"Borrador\nAsunto: {asunto or '(sin asunto)'}\n\n{contenido}\n\n{fecha}"
+        agregar_mensaje(Contenedor_Msj, texto, "enviado")
+
+
+def limpiar_redactor():
+    entry_dest.delete(0, "end")
+    entry_asunto.delete(0, "end")
+    textbox_contenido.delete("1.0", "end")
+
+
+def enviar_desde_ui():
+    global frame_visible
+
+    destinatario = entry_dest.get().strip()
+    asunto = entry_asunto.get().strip()
+    contenido = textbox_contenido.get("1.0", "end").strip()
+
+    if not destinatario or not asunto or not contenido:
+        messagebox.showwarning("Campos vacios", "Completa destinatario, asunto y mensaje.")
+        return
+
+    destinatario_info = obtener_usuario_por_correo(destinatario)
+    if not destinatario_info:
+        messagebox.showerror("Correo no encontrado", "El correo destinatario no existe.")
+        return
+
+    enviar_mensaje(int(usuario_id), destinatario_info["id"], asunto, contenido)
+    limpiar_redactor()
+    frame_redactar.place_forget()
+    frame_visible = False
+    messagebox.showinfo("Mensaje enviado", "El mensaje se envio correctamente.")
+    mostrar_mensajes_recibidos()
+
+
+def toggle_redactar():
+    global frame_visible
+
+    if not frame_visible:
+        frame_redactar.place(relx=0.5, rely=0.5, anchor="center")
+        frame_visible = True
+        return
+
+    asunto = entry_asunto.get().strip()
+    contenido = textbox_contenido.get("1.0", "end").strip()
+
+    if asunto or contenido:
+        guardar_borrador(int(usuario_id), asunto, contenido)
+
+    frame_redactar.place_forget()
+    frame_visible = False
+    limpiar_redactor()
+    mostrar_borradores()
+
+
 Enviar = CTkImage(
     light_image=Image.open("Lapiz.png"),
     dark_image=Image.open("Lapiz.png"),
@@ -50,57 +134,51 @@ Enviar = CTkImage(
 )
 
 frame_visible = False
-frame_redactar = CTkFrame(Msj, fg_color="#202020", corner_radius=10, border_width=1, 
-                           width=500, height=400) 
+frame_redactar = CTkFrame(
+    Msj,
+    fg_color="#202020",
+    corner_radius=10,
+    border_width=1,
+    width=500,
+    height=400,
+)
 frame_redactar.place_forget()
 frame_redactar.grid_propagate(False)
 
-# Correo destinatario
 label_dest = CTkLabel(frame_redactar, text="Para:")
 label_dest.pack(pady=(10, 0))
 
 entry_dest = CTkEntry(frame_redactar, width=300)
 entry_dest.pack(pady=5)
 
-# Asunto
 label_asunto = CTkLabel(frame_redactar, text="Asunto:")
 label_asunto.pack(pady=(10, 0))
 
 entry_asunto = CTkEntry(frame_redactar, width=300)
 entry_asunto.pack(pady=5)
 
-# Contenido
 label_contenido = CTkLabel(frame_redactar, text="Mensaje:")
 label_contenido.pack(pady=(10, 0))
 
 textbox_contenido = CTkTextbox(frame_redactar, width=350, height=150)
 textbox_contenido.pack(pady=10)
 
-Enviar_Msj = CTkButton(frame_redactar, text="Enviar", fg_color="#1F6AA5", hover_color="#3B3B3B", corner_radius=5, width=10, height=20)
+Enviar_Msj = CTkButton(
+    frame_redactar,
+    text="Enviar",
+    fg_color="#1F6AA5",
+    hover_color="#3B3B3B",
+    corner_radius=5,
+    width=10,
+    height=20,
+    command=enviar_desde_ui,
+)
 Enviar_Msj.pack(pady=10)
-
-dest = entry_dest.get()
-asunto = entry_asunto.get()
-contenido = textbox_contenido.get("1.0", "end").strip()
-
-if asunto or contenido:
-    guardar_borrador(usuario_id, dest, asunto, contenido)
-def toggle_redactar():
-    global frame_visible
-
-    if not frame_visible:
-        frame_redactar.place(relx=0.5, rely=0.5, anchor="center")
-        frame_visible = True
-    else:
-        frame_redactar.place_forget()
-        frame_visible = False
 
 Boton_Enviar = CTkButton(Fila, text="", image=Enviar, fg_color="#2B2B2B", hover_color="#3B3B3B", corner_radius=0, width=0, height=0)
 Boton_Enviar.grid(row=0, column=0, padx=0, pady=0, sticky="e")
 Boton_Enviar.configure(command=toggle_redactar)
-
-Tooltip(Fila, Boton_Enviar, "Redactar") 
-
+Tooltip(Fila, Boton_Enviar, "Redactar")
 
 Borrador = CTkImage(
     light_image=Image.open("avion2.png"),
@@ -109,13 +187,8 @@ Borrador = CTkImage(
 )
 Boton_Borrador = CTkButton(Pilar, text="", image=Borrador, fg_color="#2B2B2B", hover_color="#3B3B3B", corner_radius=0, width=0, height=0)
 Boton_Borrador.place(x=10, y=25)
+Boton_Borrador.configure(command=mostrar_borradores)
 Tooltip(Pilar, Boton_Borrador, "Borradores")
-
-
-
-
-
-
 
 Recibido = CTkImage(
     light_image=Image.open("recibido.png"),
@@ -124,8 +197,9 @@ Recibido = CTkImage(
 )
 Boton_Recibido = CTkButton(Pilar, text="", image=Recibido, fg_color="#2B2B2B", hover_color="#3B3B3B", corner_radius=0, width=0, height=0)
 Boton_Recibido.place(x=5, y=100)
-Tooltip(Pilar, Boton_Recibido, "Recibido"    )
-    
+Boton_Recibido.configure(command=mostrar_mensajes_recibidos)
+Tooltip(Pilar, Boton_Recibido, "Recibido")
+
 Borrar = CTkImage(
     light_image=Image.open("basura.png"),
     dark_image=Image.open("basura.png"),
@@ -133,7 +207,7 @@ Borrar = CTkImage(
 )
 Boton_Borrar = CTkButton(Pilar, text="", image=Borrar, fg_color="#2B2B2B", hover_color="#3B3B3B", corner_radius=0, width=0, height=0)
 Boton_Borrar.place(x=10, y=200)
-Tooltip(Pilar, Boton_Borrar, "Papelería")
+Tooltip(Pilar, Boton_Borrar, "Papelera")
 
 Contactos = CTkImage(
     light_image=Image.open("contactos.png"),
@@ -143,7 +217,6 @@ Contactos = CTkImage(
 Boton_Contactos = CTkButton(Pilar, text="", image=Contactos, fg_color="#2B2B2B", hover_color="#3B3B3B", corner_radius=0, width=0, height=0)
 Boton_Contactos.place(x=10, y=300)
 Tooltip(Pilar, Boton_Contactos, "Contactos")
- 
 
 Cuenta = CTkImage(
     light_image=Image.open("cuenta.png"),
@@ -151,10 +224,9 @@ Cuenta = CTkImage(
     size=(70, 70),
 )
 Boton_Cuenta = CTkButton(Fila, text="", image=Cuenta, fg_color="#2B2B2B", hover_color="#3B3B3B", corner_radius=0, width=0, height=0)
-Boton_Cuenta.grid(row=0, column=1, padx=20, pady=20, sticky="e") 
+Boton_Cuenta.grid(row=0, column=1, padx=20, pady=20, sticky="e")
 Tooltip(Fila, Boton_Cuenta, "Cuenta")
 
-
-
+mostrar_mensajes_recibidos()
 
 Ventana.mainloop()
