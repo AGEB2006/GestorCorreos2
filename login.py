@@ -57,7 +57,7 @@ contenedor.pack_propagate(False)
 
 title = CTkLabel(
     login,
-    text="Iniciar Sesion",
+    text="Iniciar Sesión",
     text_color="#FFFFFF",
     font=CTkFont(size=60, weight="bold"),
     fg_color="transparent",
@@ -95,7 +95,7 @@ def iniciar_sesion():
     contrasena = contrasena_entry.get().strip()
 
     if not correo or not contrasena:
-        messagebox.showwarning("Campos vacios", "Ingresa tu correo y tu contraseña.")
+        messagebox.showwarning("Campos vacíos", "Ingresa tu correo y tu contraseña.")
         return
 
     usuario = obtener_usuario_por_credenciales(correo, contrasena)
@@ -126,14 +126,14 @@ def recuperar_contrasena():
 
 iniciar_sesion_button = CTkButton(
     contenedor,
-    text="Iniciar Sesion",
+    text="Iniciar Sesión",
     command=iniciar_sesion,
 )
 iniciar_sesion_button.pack(pady=20)
 
 contrasena_olvidada = CTkButton(
     contenedor,
-    text="Olvide mi contraseña",
+    text="Olvidé mi contraseña",
     command=recuperar_contrasena,
     width=220,
     height=32,

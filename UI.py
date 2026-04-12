@@ -5,7 +5,16 @@ from Clases import Tooltip
 from customtkinter import *
 from PIL import Image
 
-from Funciones import agregar_mensaje, enviar_mensaje, guardar_borrador, obtener_borradores, obtener_mensajes_recibidos
+from Funciones import (
+    actualizar_borrador,
+    agregar_mensaje,
+    eliminar_borrador,
+    enviar_mensaje,
+    guardar_borrador,
+    obtener_borrador_por_id,
+    obtener_borradores,
+    obtener_mensajes_recibidos,
+)
 from bd import obtener_usuario_por_correo
 
 
@@ -45,6 +54,8 @@ info_usuario = CTkLabel(
 )
 info_usuario.grid(row=0, column=0, padx=20, pady=20, sticky="w")
 
+borrador_actual_id = None
+
 
 def limpiar_contenedor_mensajes():
     for widget in Contenedor_Msj.winfo_children():
@@ -72,9 +83,40 @@ def mostrar_borradores():
         agregar_mensaje(Contenedor_Msj, "No tienes borradores guardados.", "enviado")
         return
 
-    for _, asunto, contenido, fecha in borradores:
-        texto = f"Borrador\nAsunto: {asunto or '(sin asunto)'}\n\n{contenido}\n\n{fecha}"
-        agregar_mensaje(Contenedor_Msj, texto, "enviado")
+    for borrador_id, asunto, contenido, fecha in borradores:
+        tarjeta = CTkFrame(Contenedor_Msj, fg_color="#1F6AA5", corner_radius=10)
+        tarjeta.pack(anchor="e", pady=5, padx=10, fill="x")
+
+        texto = f"Asunto: {asunto or '(sin asunto)'}\n\n{contenido or '(vacío)'}\n\n{fecha}"
+        label = CTkLabel(
+            tarjeta,
+            text=texto,
+            text_color="white",
+            wraplength=420,
+            justify="left",
+        )
+        label.pack(padx=10, pady=(10, 6), anchor="w")
+
+        acciones = CTkFrame(tarjeta, fg_color="transparent")
+        acciones.pack(padx=10, pady=(0, 10), anchor="e")
+
+        btn_editar = CTkButton(
+            acciones,
+            text="Editar",
+            width=90,
+            command=lambda bid=borrador_id: cargar_borrador_en_redactor(bid),
+        )
+        btn_editar.pack(side="left", padx=(0, 8))
+
+        btn_eliminar = CTkButton(
+            acciones,
+            text="Eliminar",
+            width=90,
+            fg_color="#8B1E1E",
+            hover_color="#6F1818",
+            command=lambda bid=borrador_id: eliminar_borrador_y_refrescar(bid),
+        )
+        btn_eliminar.pack(side="left")
 
 
 def limpiar_redactor():
@@ -83,8 +125,70 @@ def limpiar_redactor():
     textbox_contenido.delete("1.0", "end")
 
 
+def preparar_redactor(titulo_boton="Enviar"):
+    boton_guardar_borrador.configure(text="Guardar borrador")
+    Enviar_Msj.configure(text=titulo_boton)
+
+
+def cargar_borrador_en_redactor(borrador_id):
+    global frame_visible, borrador_actual_id
+
+    borrador = obtener_borrador_por_id(borrador_id)
+    if not borrador:
+        messagebox.showerror("Borrador no encontrado", "Ese borrador ya no existe.")
+        mostrar_borradores()
+        return
+
+    _, asunto, contenido, _ = borrador
+    borrar_estado_redactor()
+    borrador_actual_id = borrador_id
+    entry_asunto.insert(0, asunto or "")
+    textbox_contenido.insert("1.0", contenido or "")
+    Enviar_Msj.configure(text="Enviar borrador")
+    boton_guardar_borrador.configure(text="Actualizar borrador")
+    frame_redactar.place(relx=0.5, rely=0.5, anchor="center")
+    frame_visible = True
+
+
+def borrar_estado_redactor():
+    global borrador_actual_id
+    borrador_actual_id = None
+    limpiar_redactor()
+    preparar_redactor()
+
+
+def guardar_borrador_desde_ui():
+    global borrador_actual_id, frame_visible
+
+    asunto = entry_asunto.get().strip()
+    contenido = textbox_contenido.get("1.0", "end").strip()
+
+    if not asunto and not contenido:
+        messagebox.showwarning("Sin contenido", "Escribe asunto o contenido para guardar el borrador.")
+        return
+
+    if borrador_actual_id is None:
+        borrador_actual_id = guardar_borrador(int(usuario_id), asunto, contenido)
+        messagebox.showinfo("Borrador guardado", "El borrador se guardó correctamente.")
+    else:
+        actualizar_borrador(borrador_actual_id, asunto, contenido)
+        messagebox.showinfo("Borrador actualizado", "Los cambios del borrador se guardaron.")
+
+    frame_redactar.place_forget()
+    frame_visible = False
+    borrar_estado_redactor()
+    mostrar_borradores()
+
+
+def eliminar_borrador_y_refrescar(borrador_id):
+    eliminado = eliminar_borrador(borrador_id)
+    if eliminado:
+        messagebox.showinfo("Borrador eliminado", "El borrador se eliminó correctamente.")
+    mostrar_borradores()
+
+
 def enviar_desde_ui():
-    global frame_visible
+    global frame_visible, borrador_actual_id
 
     destinatario = entry_dest.get().strip()
     asunto = entry_asunto.get().strip()
@@ -100,9 +204,11 @@ def enviar_desde_ui():
         return
 
     enviar_mensaje(int(usuario_id), destinatario_info["id"], asunto, contenido)
-    limpiar_redactor()
+    if borrador_actual_id is not None:
+        eliminar_borrador(borrador_actual_id)
     frame_redactar.place_forget()
     frame_visible = False
+    borrar_estado_redactor()
     messagebox.showinfo("Mensaje enviado", "El mensaje se envio correctamente.")
     mostrar_mensajes_recibidos()
 
@@ -111,19 +217,14 @@ def toggle_redactar():
     global frame_visible
 
     if not frame_visible:
+        borrar_estado_redactor()
         frame_redactar.place(relx=0.5, rely=0.5, anchor="center")
         frame_visible = True
         return
 
-    asunto = entry_asunto.get().strip()
-    contenido = textbox_contenido.get("1.0", "end").strip()
-
-    if asunto or contenido:
-        guardar_borrador(int(usuario_id), asunto, contenido)
-
     frame_redactar.place_forget()
     frame_visible = False
-    limpiar_redactor()
+    borrar_estado_redactor()
     mostrar_borradores()
 
 
@@ -174,6 +275,15 @@ Enviar_Msj = CTkButton(
     command=enviar_desde_ui,
 )
 Enviar_Msj.pack(pady=10)
+
+boton_guardar_borrador = CTkButton(
+    frame_redactar,
+    text="Guardar borrador",
+    fg_color="#5A5A5A",
+    hover_color="#474747",
+    command=guardar_borrador_desde_ui,
+)
+boton_guardar_borrador.pack(pady=(0, 10))
 
 Boton_Enviar = CTkButton(Fila, text="", image=Enviar, fg_color="#2B2B2B", hover_color="#3B3B3B", corner_radius=0, width=0, height=0)
 Boton_Enviar.grid(row=0, column=0, padx=0, pady=0, sticky="e")

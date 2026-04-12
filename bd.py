@@ -1,6 +1,9 @@
+import hashlib
+import hmac
 import sqlite3
 
 DB_PATH = "BaseDeDatos.db"
+HASH_PREFIX = "sha256$"
 
 
 def conectar():
@@ -15,6 +18,21 @@ def obtener_columna_contrasena(cursor):
         if "contrase" in nombre.lower():
             return nombre
     return "contrasena"
+
+
+def hash_contrasena(contrasena):
+    return f"{HASH_PREFIX}{hashlib.sha256(contrasena.encode('utf-8')).hexdigest()}"
+
+
+def verificar_contrasena_guardada(contrasena_ingresada, contrasena_guardada):
+    if not contrasena_guardada:
+        return False
+
+    if contrasena_guardada.startswith(HASH_PREFIX):
+        hash_esperado = hash_contrasena(contrasena_ingresada)
+        return hmac.compare_digest(hash_esperado, contrasena_guardada)
+
+    return hmac.compare_digest(contrasena_ingresada, contrasena_guardada)
 
 
 def init_db():
@@ -60,7 +78,14 @@ def registrar(correo, contrasena, nombre, telefono, pregunta_seguridad, respuest
                     correo, "{columna_contrasena}", nombre, telefono, pregunta_seguridad, respuesta_seguridad
                 ) VALUES (?, ?, ?, ?, ?, ?)
                 """,
-                (correo, contrasena, nombre, telefono, pregunta_seguridad, respuesta_seguridad.strip().lower()),
+                (
+                    correo,
+                    hash_contrasena(contrasena),
+                    nombre,
+                    telefono,
+                    pregunta_seguridad,
+                    respuesta_seguridad.strip().lower(),
+                ),
             )
         return True
     except sqlite3.IntegrityError:
@@ -77,11 +102,38 @@ def obtener_usuario_por_credenciales(correo, contrasena):
         )
         usuario = cursor.fetchone()
 
-    if usuario and usuario[2] == contrasena:
+        if usuario and verificar_contrasena_guardada(contrasena, usuario[2]):
+            # Migra cuentas antiguas en texto plano al nuevo formato hash.
+            if not usuario[2].startswith(HASH_PREFIX):
+                cursor.execute(
+                    f'UPDATE Correos SET "{columna_contrasena}" = ? WHERE id = ?',
+                    (hash_contrasena(contrasena), usuario[0]),
+                )
+                conexion.commit()
+
+            return {
+                "id": usuario[0],
+                "correo": usuario[1],
+                "nombre": usuario[3] or "Usuario",
+            }
+
+    return None
+
+
+def obtener_usuario_por_correo(correo):
+    with conectar() as conexion:
+        cursor = conexion.cursor()
+        cursor.execute(
+            "SELECT id, correo, nombre FROM Correos WHERE correo = ?",
+            (correo,),
+        )
+        usuario = cursor.fetchone()
+
+    if usuario:
         return {
             "id": usuario[0],
             "correo": usuario[1],
-            "nombre": usuario[3] or "Usuario",
+            "nombre": usuario[2] or usuario[1],
         }
     return None
 
@@ -120,7 +172,7 @@ def actualizar_contrasena(correo, nueva_contrasena):
         columna_contrasena = obtener_columna_contrasena(cursor)
         cursor.execute(
             f'UPDATE Correos SET "{columna_contrasena}" = ? WHERE correo = ?',
-            (nueva_contrasena, correo),
+            (hash_contrasena(nueva_contrasena), correo),
         )
         conexion.commit()
         return cursor.rowcount > 0
@@ -153,19 +205,8 @@ def crear_tabla_mensajes():
             )
             """
         )
-def obtener_usuario_por_correo(correo):
-    with conectar() as conexion:
-        cursor = conexion.cursor()
-        cursor.execute(
-            "SELECT id FROM Correos WHERE correo = ?",
-            (correo,)
-        )
-        resultado = cursor.fetchone()
-        return resultado[0] if resultado else None
-
 
 
 init_db()
 normalizar_tabla()
 crear_tabla_mensajes()
-

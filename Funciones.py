@@ -86,6 +86,50 @@ def guardar_borrador(remitente_id, asunto, contenido):
             (remitente_id, asunto, contenido),
         )
         conexion.commit()
+        return cursor.lastrowid
+
+
+def actualizar_borrador(borrador_id, asunto, contenido):
+    with conectar() as conexion:
+        cursor = conexion.cursor()
+        cursor.execute(
+            """
+            UPDATE Mensajes
+            SET asunto = ?, contenido = ?, fecha = CURRENT_TIMESTAMP
+            WHERE id = ? AND tipo = 'borrador'
+            """,
+            (asunto, contenido, borrador_id),
+        )
+        conexion.commit()
+        return cursor.rowcount > 0
+
+
+def obtener_borrador_por_id(borrador_id):
+    with conectar() as conexion:
+        cursor = conexion.cursor()
+        cursor.execute(
+            """
+            SELECT id, asunto, contenido, fecha
+            FROM Mensajes
+            WHERE id = ? AND tipo = 'borrador' AND eliminado = 0
+            """,
+            (borrador_id,),
+        )
+        return cursor.fetchone()
+
+
+def eliminar_borrador(borrador_id):
+    with conectar() as conexion:
+        cursor = conexion.cursor()
+        cursor.execute(
+            """
+            DELETE FROM Mensajes
+            WHERE id = ? AND tipo = 'borrador'
+            """,
+            (borrador_id,),
+        )
+        conexion.commit()
+        return cursor.rowcount > 0
 
 
 def obtener_borradores(remitente_id):

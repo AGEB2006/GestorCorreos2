@@ -12,9 +12,9 @@ from bd import registrar
 set_appearance_mode("dark")
 
 PREGUNTAS_SEGURIDAD = [
-    "Como se llamo tu primera mascota?",
-    "Cual es el nombre de tu papa?",
-    "Cual es tu comida favorita?",
+    "¿Cómo se llamó tu primera mascota?",
+    "¿Cuál es el nombre de tu papá?",
+    "¿Cuál es tu comida favorita?",
 ]
 
 registro = CTk()
@@ -82,19 +82,19 @@ correo_label.pack(pady=(10, 5))
 correo_entry = CTkEntry(contenedor, width=260)
 correo_entry.pack()
 
-telefono_label = CTkLabel(contenedor, text="Telefono:", text_color="#111111", fg_color="transparent")
+telefono_label = CTkLabel(contenedor, text="Teléfono:", text_color="#111111", fg_color="transparent")
 telefono_label.pack(pady=(10, 5))
 
 telefono_entry = CTkEntry(contenedor, width=260)
 telefono_entry.pack()
 
-contrasena_label = CTkLabel(contenedor, text="Contrasena:", text_color="#111111", fg_color="transparent")
+contrasena_label = CTkLabel(contenedor, text="Contraseña:", text_color="#111111", fg_color="transparent")
 contrasena_label.pack(pady=(10, 5))
 
 contrasena_entry = CTkEntry(contenedor, width=260, show="*")
 contrasena_entry.pack()
 
-confirmar_label = CTkLabel(contenedor, text="Confirmar contrasena:", text_color="#111111", fg_color="transparent")
+confirmar_label = CTkLabel(contenedor, text="Confirmar contraseña:", text_color="#111111", fg_color="transparent")
 confirmar_label.pack(pady=(10, 5))
 
 confirmar_entry = CTkEntry(contenedor, width=260, show="*")
@@ -124,11 +124,11 @@ def registrar_usuario():
     respuesta = respuesta_entry.get().strip()
 
     if not nombre or not correo or not telefono or not contrasena or not confirmar or not pregunta or not respuesta:
-        messagebox.showwarning("Campos vacios", "Completa todos los campos antes de registrarte.")
+        messagebox.showwarning("Campos vacíos", "Completa todos los campos antes de registrarte.")
         return
 
     if contrasena != confirmar:
-        messagebox.showerror("Error", "Las contrasenas no coinciden.")
+        messagebox.showerror("Error", "Las contraseñas no coinciden.")
         return
 
     creado = registrar(correo, contrasena, nombre, telefono, pregunta, respuesta)
@@ -136,7 +136,7 @@ def registrar_usuario():
         messagebox.showerror("Correo ya registrado", "Ese correo ya existe en la base de datos.")
         return
 
-    messagebox.showinfo("Registro exitoso", "Tu cuenta se creo correctamente.")
+    messagebox.showinfo("Registro exitoso", "Tu cuenta se creó correctamente.")
     volver_login()
 
 

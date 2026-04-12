@@ -7,7 +7,7 @@ from bd import actualizar_contrasena, obtener_pregunta_seguridad, verificar_resp
 
 def abrir_recuperacion(ventana_padre, correo_entry, contrasena_entry):
     ventana_recuperacion = CTkToplevel(ventana_padre)
-    ventana_recuperacion.title("Recuperar contrasena")
+    ventana_recuperacion.title("Recuperar contraseña")
     ventana_recuperacion.geometry("460x560+500+180")
     ventana_recuperacion.minsize(460, 560)
     ventana_recuperacion.configure(fg_color="#1A1A1A")
@@ -21,7 +21,7 @@ def abrir_recuperacion(ventana_padre, correo_entry, contrasena_entry):
 
     titulo = CTkLabel(
         ventana_recuperacion,
-        text="Recuperar contrasena",
+        text="Recuperar contraseña",
         text_color="#FFFFFF",
         font=CTkFont(size=24, weight="bold"),
     )
@@ -55,12 +55,12 @@ def abrir_recuperacion(ventana_padre, correo_entry, contrasena_entry):
     respuesta_entry = CTkEntry(ventana_recuperacion, width=280)
     respuesta_entry.pack(pady=(0, 10))
 
-    nueva_label = CTkLabel(ventana_recuperacion, text="Nueva contrasena:", text_color="#FFFFFF")
+    nueva_label = CTkLabel(ventana_recuperacion, text="Nueva contraseña:", text_color="#FFFFFF")
     nueva_label.pack(pady=(0, 5))
     nueva_entry = CTkEntry(ventana_recuperacion, width=280, show="*")
     nueva_entry.pack(pady=(0, 10))
 
-    confirmar_label = CTkLabel(ventana_recuperacion, text="Confirmar contrasena:", text_color="#FFFFFF")
+    confirmar_label = CTkLabel(ventana_recuperacion, text="Confirmar contraseña:", text_color="#FFFFFF")
     confirmar_label.pack(pady=(0, 5))
     confirmar_entry = CTkEntry(ventana_recuperacion, width=280, show="*")
     confirmar_entry.pack(pady=(0, 16))
@@ -68,12 +68,12 @@ def abrir_recuperacion(ventana_padre, correo_entry, contrasena_entry):
     def cargar_pregunta():
         correo = correo_rec_entry.get().strip()
         if not correo:
-            messagebox.showwarning("Correo vacio", "Escribe tu correo primero.", parent=ventana_recuperacion)
+            messagebox.showwarning("Correo vacío", "Escribe tu correo primero.", parent=ventana_recuperacion)
             return
 
         pregunta = obtener_pregunta_seguridad(correo)
         if not pregunta:
-            pregunta_mostrada.set("No se encontro pregunta de seguridad para ese correo.")
+            pregunta_mostrada.set("No se encontró pregunta de seguridad para ese correo.")
             return
 
         pregunta_mostrada.set(pregunta)
@@ -85,20 +85,20 @@ def abrir_recuperacion(ventana_padre, correo_entry, contrasena_entry):
         confirmar = confirmar_entry.get().strip()
 
         if not correo or not respuesta or not nueva or not confirmar:
-            messagebox.showwarning("Campos vacios", "Completa todos los campos.", parent=ventana_recuperacion)
+            messagebox.showwarning("Campos vacíos", "Completa todos los campos.", parent=ventana_recuperacion)
             return
 
         pregunta = obtener_pregunta_seguridad(correo)
         if not pregunta:
             messagebox.showerror(
-                "Sin configuracion",
+                "Sin configuración",
                 "Ese correo no tiene pregunta de seguridad registrada.",
                 parent=ventana_recuperacion,
             )
             return
 
         if nueva != confirmar:
-            messagebox.showerror("Error", "Las contrasenas no coinciden.", parent=ventana_recuperacion)
+            messagebox.showerror("Error", "Las contraseñas no coinciden.", parent=ventana_recuperacion)
             return
 
         if not verificar_respuesta_seguridad(correo, respuesta):
@@ -119,8 +119,8 @@ def abrir_recuperacion(ventana_padre, correo_entry, contrasena_entry):
         contrasena_entry.delete(0, "end")
         contrasena_entry.insert(0, nueva)
         messagebox.showinfo(
-            "Contrasena actualizada",
-            "Ya puedes iniciar sesion con tu nueva contrasena.",
+            "Contraseña actualizada",
+            "Ya puedes iniciar sesión con tu nueva contraseña.",
             parent=ventana_recuperacion,
         )
         ventana_recuperacion.destroy()
@@ -134,7 +134,7 @@ def abrir_recuperacion(ventana_padre, correo_entry, contrasena_entry):
 
     btn_guardar = CTkButton(
         ventana_recuperacion,
-        text="Restablecer contrasena",
+        text="Restablecer contraseña",
         command=guardar_nueva_contrasena,
     )
     btn_guardar.pack(pady=(0, 10))
