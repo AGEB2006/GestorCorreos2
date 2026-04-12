@@ -1,32 +1,4 @@
-from customtkinter import *
-
 from bd import conectar
-
-
-def agregar_mensaje(contenedor, texto, tipo="recibido"):
-    if tipo == "recibido":
-        anchor = "w"
-        color = "#3B3B3B"
-    else:
-        anchor = "e"
-        color = "#1F6AA5"
-
-    burbuja = CTkFrame(
-        contenedor,
-        fg_color=color,
-        corner_radius=10,
-    )
-
-    label = CTkLabel(
-        burbuja,
-        text=texto,
-        text_color="white",
-        wraplength=300,
-        justify="left",
-    )
-    label.pack(padx=10, pady=5)
-
-    burbuja.pack(anchor=anchor, pady=5, padx=10)
 
 
 def enviar_mensaje(remitente_id, destinatario_id, asunto, contenido):
@@ -73,6 +45,7 @@ def eliminar_mensaje(mensaje_id):
             (mensaje_id,),
         )
         conexion.commit()
+        return cursor.rowcount > 0
 
 
 def guardar_borrador(remitente_id, asunto, contenido):
@@ -123,7 +96,8 @@ def eliminar_borrador(borrador_id):
         cursor = conexion.cursor()
         cursor.execute(
             """
-            DELETE FROM Mensajes
+            UPDATE Mensajes
+            SET eliminado = 1
             WHERE id = ? AND tipo = 'borrador'
             """,
             (borrador_id,),
@@ -145,3 +119,56 @@ def obtener_borradores(remitente_id):
             (remitente_id,),
         )
         return cursor.fetchall()
+
+
+def obtener_papelera(usuario_id):
+    with conectar() as conexion:
+        cursor = conexion.cursor()
+        cursor.execute(
+            """
+            SELECT
+                m.id,
+                m.tipo,
+                COALESCE(c.nombre, c.correo, 'Sin remitente') AS remitente,
+                m.asunto,
+                m.contenido,
+                m.fecha
+            FROM Mensajes m
+            LEFT JOIN Correos c ON c.id = m.remitente_id
+            WHERE
+                m.eliminado = 1
+                AND (m.destinatario_id = ? OR m.remitente_id = ?)
+            ORDER BY m.fecha DESC
+            """,
+            (usuario_id, usuario_id),
+        )
+        return cursor.fetchall()
+
+
+def restaurar_desde_papelera(mensaje_id):
+    with conectar() as conexion:
+        cursor = conexion.cursor()
+        cursor.execute(
+            """
+            UPDATE Mensajes
+            SET eliminado = 0
+            WHERE id = ?
+            """,
+            (mensaje_id,),
+        )
+        conexion.commit()
+        return cursor.rowcount > 0
+
+
+def eliminar_definitivamente(mensaje_id):
+    with conectar() as conexion:
+        cursor = conexion.cursor()
+        cursor.execute(
+            """
+            DELETE FROM Mensajes
+            WHERE id = ?
+            """,
+            (mensaje_id,),
+        )
+        conexion.commit()
+        return cursor.rowcount > 0

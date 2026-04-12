@@ -7,13 +7,16 @@ from PIL import Image
 
 from Funciones import (
     actualizar_borrador,
-    agregar_mensaje,
     eliminar_borrador,
+    eliminar_definitivamente,
+    eliminar_mensaje,
     enviar_mensaje,
     guardar_borrador,
     obtener_borrador_por_id,
     obtener_borradores,
     obtener_mensajes_recibidos,
+    obtener_papelera,
+    restaurar_desde_papelera,
 )
 from bd import obtener_usuario_por_correo
 
@@ -62,17 +65,57 @@ def limpiar_contenedor_mensajes():
         widget.destroy()
 
 
+def crear_tarjeta_mensaje(color="#3B3B3B"):
+    tarjeta = CTkFrame(Contenedor_Msj, fg_color=color, corner_radius=10)
+    tarjeta.pack(anchor="e", pady=5, padx=10, fill="x")
+    return tarjeta
+
+
+def agregar_texto_tarjeta(tarjeta, texto):
+    label = CTkLabel(
+        tarjeta,
+        text=texto,
+        text_color="white",
+        wraplength=420,
+        justify="left",
+    )
+    label.pack(padx=10, pady=(10, 6), anchor="w")
+
+
+def crear_acciones_tarjeta(tarjeta):
+    acciones = CTkFrame(tarjeta, fg_color="transparent")
+    acciones.pack(padx=10, pady=(0, 10), anchor="e")
+    return acciones
+
+
+def mostrar_tarjeta_info(texto):
+    tarjeta = crear_tarjeta_mensaje("#3B3B3B")
+    agregar_texto_tarjeta(tarjeta, texto)
+
+
 def mostrar_mensajes_recibidos():
     limpiar_contenedor_mensajes()
     mensajes = obtener_mensajes_recibidos(int(usuario_id)) if str(usuario_id).isdigit() else []
 
     if not mensajes:
-        agregar_mensaje(Contenedor_Msj, "No tienes mensajes recibidos.", "recibido")
+        mostrar_tarjeta_info("No tienes mensajes recibidos.")
         return
 
-    for _, _, remitente, asunto, contenido, fecha, _ in mensajes:
-        texto = f"De: {remitente}\nAsunto: {asunto}\n\n{contenido}\n\n{fecha}"
-        agregar_mensaje(Contenedor_Msj, texto, "recibido")
+    for mensaje_id, _, remitente, asunto, contenido, fecha, _ in mensajes:
+        tarjeta = crear_tarjeta_mensaje("#3B3B3B")
+        texto = f"De: {remitente}\nAsunto: {asunto or '(sin asunto)'}\n\n{contenido or '(vacío)'}\n\n{fecha}"
+        agregar_texto_tarjeta(tarjeta, texto)
+        acciones = crear_acciones_tarjeta(tarjeta)
+
+        btn_eliminar = CTkButton(
+            acciones,
+            text="Enviar a papelera",
+            width=140,
+            fg_color="#8B1E1E",
+            hover_color="#6F1818",
+            command=lambda mid=mensaje_id: mover_mensaje_a_papelera(mid),
+        )
+        btn_eliminar.pack(side="left")
 
 
 def mostrar_borradores():
@@ -80,25 +123,14 @@ def mostrar_borradores():
     borradores = obtener_borradores(int(usuario_id)) if str(usuario_id).isdigit() else []
 
     if not borradores:
-        agregar_mensaje(Contenedor_Msj, "No tienes borradores guardados.", "enviado")
+        mostrar_tarjeta_info("No tienes borradores guardados.")
         return
 
     for borrador_id, asunto, contenido, fecha in borradores:
-        tarjeta = CTkFrame(Contenedor_Msj, fg_color="#1F6AA5", corner_radius=10)
-        tarjeta.pack(anchor="e", pady=5, padx=10, fill="x")
-
+        tarjeta = crear_tarjeta_mensaje("#1F6AA5")
         texto = f"Asunto: {asunto or '(sin asunto)'}\n\n{contenido or '(vacío)'}\n\n{fecha}"
-        label = CTkLabel(
-            tarjeta,
-            text=texto,
-            text_color="white",
-            wraplength=420,
-            justify="left",
-        )
-        label.pack(padx=10, pady=(10, 6), anchor="w")
-
-        acciones = CTkFrame(tarjeta, fg_color="transparent")
-        acciones.pack(padx=10, pady=(0, 10), anchor="e")
+        agregar_texto_tarjeta(tarjeta, texto)
+        acciones = crear_acciones_tarjeta(tarjeta)
 
         btn_editar = CTkButton(
             acciones,
@@ -110,13 +142,53 @@ def mostrar_borradores():
 
         btn_eliminar = CTkButton(
             acciones,
-            text="Eliminar",
-            width=90,
+            text="Enviar a papelera",
+            width=140,
             fg_color="#8B1E1E",
             hover_color="#6F1818",
             command=lambda bid=borrador_id: eliminar_borrador_y_refrescar(bid),
         )
         btn_eliminar.pack(side="left")
+
+
+def mostrar_papelera():
+    limpiar_contenedor_mensajes()
+    elementos = obtener_papelera(int(usuario_id)) if str(usuario_id).isdigit() else []
+
+    if not elementos:
+        mostrar_tarjeta_info("La papelera está vacía.")
+        return
+
+    for mensaje_id, tipo, remitente, asunto, contenido, fecha in elementos:
+        color = "#5A5A5A" if tipo == "borrador" else "#4C3A3A"
+        tarjeta = crear_tarjeta_mensaje(color)
+        etiqueta_tipo = "Borrador" if tipo == "borrador" else "Mensaje"
+        texto = (
+            f"{etiqueta_tipo} en papelera\n"
+            f"Referencia: {remitente}\n"
+            f"Asunto: {asunto or '(sin asunto)'}\n\n"
+            f"{contenido or '(vacío)'}\n\n{fecha}"
+        )
+        agregar_texto_tarjeta(tarjeta, texto)
+        acciones = crear_acciones_tarjeta(tarjeta)
+
+        btn_restaurar = CTkButton(
+            acciones,
+            text="Restaurar",
+            width=100,
+            command=lambda mid=mensaje_id: restaurar_desde_papelera_y_refrescar(mid),
+        )
+        btn_restaurar.pack(side="left", padx=(0, 8))
+
+        btn_borrar = CTkButton(
+            acciones,
+            text="Borrar definitivo",
+            width=130,
+            fg_color="#8B1E1E",
+            hover_color="#6F1818",
+            command=lambda mid=mensaje_id: borrar_definitivo_y_refrescar(mid),
+        )
+        btn_borrar.pack(side="left")
 
 
 def limpiar_redactor():
@@ -183,8 +255,29 @@ def guardar_borrador_desde_ui():
 def eliminar_borrador_y_refrescar(borrador_id):
     eliminado = eliminar_borrador(borrador_id)
     if eliminado:
-        messagebox.showinfo("Borrador eliminado", "El borrador se eliminó correctamente.")
+        messagebox.showinfo("Borrador enviado a papelera", "El borrador se movió a la papelera.")
     mostrar_borradores()
+
+
+def mover_mensaje_a_papelera(mensaje_id):
+    eliminado = eliminar_mensaje(mensaje_id)
+    if eliminado:
+        messagebox.showinfo("Mensaje enviado a papelera", "El mensaje se movió a la papelera.")
+    mostrar_mensajes_recibidos()
+
+
+def restaurar_desde_papelera_y_refrescar(mensaje_id):
+    restaurado = restaurar_desde_papelera(mensaje_id)
+    if restaurado:
+        messagebox.showinfo("Elemento restaurado", "El elemento volvió desde la papelera.")
+    mostrar_papelera()
+
+
+def borrar_definitivo_y_refrescar(mensaje_id):
+    borrado = eliminar_definitivamente(mensaje_id)
+    if borrado:
+        messagebox.showinfo("Elemento eliminado", "El elemento se borró definitivamente.")
+    mostrar_papelera()
 
 
 def enviar_desde_ui():
@@ -195,7 +288,7 @@ def enviar_desde_ui():
     contenido = textbox_contenido.get("1.0", "end").strip()
 
     if not destinatario or not asunto or not contenido:
-        messagebox.showwarning("Campos vacios", "Completa destinatario, asunto y mensaje.")
+        messagebox.showwarning("Campos vacíos", "Completa destinatario, asunto y mensaje.")
         return
 
     destinatario_info = obtener_usuario_por_correo(destinatario)
@@ -205,11 +298,11 @@ def enviar_desde_ui():
 
     enviar_mensaje(int(usuario_id), destinatario_info["id"], asunto, contenido)
     if borrador_actual_id is not None:
-        eliminar_borrador(borrador_actual_id)
+        eliminar_definitivamente(borrador_actual_id)
     frame_redactar.place_forget()
     frame_visible = False
     borrar_estado_redactor()
-    messagebox.showinfo("Mensaje enviado", "El mensaje se envio correctamente.")
+    messagebox.showinfo("Mensaje enviado", "El mensaje se envió correctamente.")
     mostrar_mensajes_recibidos()
 
 
@@ -317,6 +410,7 @@ Borrar = CTkImage(
 )
 Boton_Borrar = CTkButton(Pilar, text="", image=Borrar, fg_color="#2B2B2B", hover_color="#3B3B3B", corner_radius=0, width=0, height=0)
 Boton_Borrar.place(x=10, y=200)
+Boton_Borrar.configure(command=mostrar_papelera)
 Tooltip(Pilar, Boton_Borrar, "Papelera")
 
 Contactos = CTkImage(
