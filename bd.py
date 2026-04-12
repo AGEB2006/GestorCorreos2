@@ -140,5 +140,28 @@ def login(correo, contrasena):
     return None
 
 
+def crear_tabla_mensajes():
+    with conectar() as conexion:
+        cursor = conexion.cursor()
+        cursor.execute(
+            """
+            CREATE TABLE IF NOT EXISTS Mensajes (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                remitente_id INTEGER,
+                destinatario_id INTEGER,
+                asunto TEXT,
+                contenido TEXT,
+                fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                leido INTEGER DEFAULT 0,
+                eliminado INTEGER DEFAULT 0,
+                FOREIGN KEY(remitente_id) REFERENCES Correos(id),
+                FOREIGN KEY(destinatario_id) REFERENCES Correos(id)
+            )
+            """
+        )
+
+
 init_db()
 normalizar_tabla()
+crear_tabla_mensajes()
+
