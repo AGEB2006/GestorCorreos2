@@ -18,7 +18,7 @@ from Funciones import (
     obtener_papelera,
     restaurar_desde_papelera,
 )
-from bd import obtener_usuario_por_correo
+from bd import agregar_contacto_por_correo, eliminar_contacto, obtener_contactos, obtener_usuario_por_correo
 
 
 def obtener_datos_usuario():
@@ -195,6 +195,76 @@ def limpiar_redactor():
     entry_dest.delete(0, "end")
     entry_asunto.delete(0, "end")
     textbox_contenido.delete("1.0", "end")
+
+
+def limpiar_panel_contactos():
+    for widget in lista_contactos.winfo_children():
+        widget.destroy()
+
+
+def cerrar_panel_contactos():
+    frame_contactos.place_forget()
+
+
+def mostrar_contactos():
+    limpiar_panel_contactos()
+    frame_contactos.place(relx=0.5, rely=0.5, anchor="center")
+
+    contactos = obtener_contactos(int(usuario_id)) if str(usuario_id).isdigit() else []
+
+    if not contactos:
+        aviso = CTkLabel(
+            lista_contactos,
+            text="No tienes contactos agregados.\nPuedes agregar uno usando su correo.",
+            justify="center",
+        )
+        aviso.pack(pady=30)
+        return
+
+    for relacion_id, nombre, correo in contactos:
+        tarjeta = CTkFrame(lista_contactos, fg_color="#2F2F2F", corner_radius=10)
+        tarjeta.pack(fill="x", padx=10, pady=6)
+
+        texto = CTkLabel(
+            tarjeta,
+            text=f"{nombre or correo}\n{correo}",
+            justify="left",
+            text_color="white",
+        )
+        texto.pack(side="left", padx=12, pady=10)
+
+        boton_quitar = CTkButton(
+            tarjeta,
+            text="Quitar",
+            width=90,
+            fg_color="#8B1E1E",
+            hover_color="#6F1818",
+            command=lambda rid=relacion_id: quitar_contacto_y_refrescar(rid),
+        )
+        boton_quitar.pack(side="right", padx=12, pady=10)
+
+
+def agregar_contacto_desde_ui():
+    correo_contacto = entry_contacto_correo.get().strip()
+
+    if not correo_contacto:
+        messagebox.showwarning("Correo vacío", "Escribe el correo del contacto.")
+        return
+
+    exito, resultado = agregar_contacto_por_correo(int(usuario_id), correo_contacto)
+    if not exito:
+        messagebox.showerror("No se pudo agregar", resultado)
+        return
+
+    entry_contacto_correo.delete(0, "end")
+    messagebox.showinfo("Contacto agregado", f"Se agregó a {resultado['nombre']} correctamente.")
+    mostrar_contactos()
+
+
+def quitar_contacto_y_refrescar(relacion_id):
+    if eliminar_contacto(relacion_id):
+        messagebox.showinfo("Contacto eliminado", "El contacto se quitó de tu lista.")
+    mostrar_contactos()
 
 
 def preparar_redactor(titulo_boton="Enviar"):
@@ -378,6 +448,58 @@ boton_guardar_borrador = CTkButton(
 )
 boton_guardar_borrador.pack(pady=(0, 10))
 
+frame_contactos = CTkFrame(
+    Msj,
+    fg_color="#202020",
+    corner_radius=10,
+    border_width=1,
+    width=500,
+    height=400,
+)
+frame_contactos.place_forget()
+frame_contactos.pack_propagate(False)
+
+titulo_contactos = CTkLabel(
+    frame_contactos,
+    text="Contactos",
+    font=CTkFont(size=24, weight="bold"),
+)
+titulo_contactos.pack(pady=(12, 8))
+
+lista_contactos = CTkScrollableFrame(
+    frame_contactos,
+    width=440,
+    height=220,
+    fg_color="transparent",
+)
+lista_contactos.pack(padx=20, pady=(0, 12), fill="both", expand=False)
+
+seccion_agregar = CTkFrame(frame_contactos, fg_color="transparent")
+seccion_agregar.pack(padx=20, pady=(0, 12), fill="x")
+
+label_contacto_correo = CTkLabel(seccion_agregar, text="Agregar por correo:")
+label_contacto_correo.pack(anchor="w")
+
+entry_contacto_correo = CTkEntry(seccion_agregar, width=320)
+entry_contacto_correo.pack(side="left", padx=(0, 8), pady=(6, 0))
+
+boton_agregar_contacto = CTkButton(
+    seccion_agregar,
+    text="Agregar",
+    width=90,
+    command=agregar_contacto_desde_ui,
+)
+boton_agregar_contacto.pack(side="left", pady=(6, 0))
+
+boton_cerrar_contactos = CTkButton(
+    frame_contactos,
+    text="Cerrar",
+    fg_color="#5A5A5A",
+    hover_color="#474747",
+    command=cerrar_panel_contactos,
+)
+boton_cerrar_contactos.pack(pady=(0, 12))
+
 Boton_Enviar = CTkButton(Fila, text="", image=Enviar, fg_color="#2B2B2B", hover_color="#3B3B3B", corner_radius=0, width=0, height=0)
 Boton_Enviar.grid(row=0, column=0, padx=0, pady=0, sticky="e")
 Boton_Enviar.configure(command=toggle_redactar)
@@ -420,6 +542,7 @@ Contactos = CTkImage(
 )
 Boton_Contactos = CTkButton(Pilar, text="", image=Contactos, fg_color="#2B2B2B", hover_color="#3B3B3B", corner_radius=0, width=0, height=0)
 Boton_Contactos.place(x=10, y=300)
+Boton_Contactos.configure(command=mostrar_contactos)
 Tooltip(Pilar, Boton_Contactos, "Contactos")
 
 Cuenta = CTkImage(

@@ -207,6 +207,91 @@ def crear_tabla_mensajes():
         )
 
 
+def crear_tabla_contactos():
+    with conectar() as conexion:
+        cursor = conexion.cursor()
+        cursor.execute(
+            """
+            CREATE TABLE IF NOT EXISTS Contactos (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                usuario_id INTEGER NOT NULL,
+                contacto_id INTEGER NOT NULL,
+                UNIQUE(usuario_id, contacto_id),
+                FOREIGN KEY(usuario_id) REFERENCES Correos(id),
+                FOREIGN KEY(contacto_id) REFERENCES Correos(id)
+            )
+            """
+        )
+
+
+def obtener_contactos(usuario_id):
+    with conectar() as conexion:
+        cursor = conexion.cursor()
+        cursor.execute(
+            """
+            SELECT
+                c.id,
+                u.nombre,
+                u.correo
+            FROM Contactos c
+            JOIN Correos u ON u.id = c.contacto_id
+            WHERE c.usuario_id = ?
+            ORDER BY COALESCE(u.nombre, u.correo), u.correo
+            """,
+            (usuario_id,),
+        )
+        return cursor.fetchall()
+
+
+def agregar_contacto_por_correo(usuario_id, correo_contacto):
+    with conectar() as conexion:
+        cursor = conexion.cursor()
+        cursor.execute(
+            "SELECT id, correo, nombre FROM Correos WHERE correo = ?",
+            (correo_contacto,),
+        )
+        contacto = cursor.fetchone()
+
+        if not contacto:
+            return False, "No existe una cuenta con ese correo."
+
+        if contacto[0] == usuario_id:
+            return False, "No puedes agregarte a ti mismo como contacto."
+
+        try:
+            cursor.execute(
+                """
+                INSERT INTO Contactos (usuario_id, contacto_id)
+                VALUES (?, ?)
+                """,
+                (usuario_id, contacto[0]),
+            )
+            conexion.commit()
+        except sqlite3.IntegrityError:
+            return False, "Ese contacto ya está agregado."
+
+    return True, {
+        "id": contacto[0],
+        "correo": contacto[1],
+        "nombre": contacto[2] or contacto[1],
+    }
+
+
+def eliminar_contacto(contacto_relacion_id):
+    with conectar() as conexion:
+        cursor = conexion.cursor()
+        cursor.execute(
+            """
+            DELETE FROM Contactos
+            WHERE id = ?
+            """,
+            (contacto_relacion_id,),
+        )
+        conexion.commit()
+        return cursor.rowcount > 0
+
+
 init_db()
 normalizar_tabla()
 crear_tabla_mensajes()
+crear_tabla_contactos()
