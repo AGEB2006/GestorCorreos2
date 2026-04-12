@@ -2,6 +2,7 @@ import sys
 from Clases import *
 from customtkinter import *
 from PIL import Image
+from Funciones import *
 
 
 def obtener_datos_usuario():
@@ -27,8 +28,11 @@ Fila.grid_columnconfigure(1, weight=0)
 Pilar = CTkFrame(Ventana, width=100, height=100, fg_color="#2B2B2B", corner_radius=-1, border_width=-1)
 Pilar.grid(row=1, column=0, sticky="nsew", padx=0, pady=0)
 
-Msj = CTkFrame(Ventana, fg_color="#676767", corner_radius=-1, border_width=-1)
+Msj = CTkFrame(Ventana, fg_color="white", corner_radius=-1, border_width=-1)
 Msj.grid(row=1, column=1, sticky="nsew", padx=0, pady=0)
+Contenedor_Msj = CTkScrollableFrame(Msj, fg_color="transparent", border_width=0, corner_radius=0)
+Contenedor_Msj.pack(fill="both", expand=True)
+agregar_mensaje(Contenedor_Msj, "Hola", "recibido")
 
 info_usuario = CTkLabel(
     Fila,
@@ -83,6 +87,8 @@ Cuenta = CTkImage(
 Boton_Cuenta = CTkButton(Fila, text="", image=Cuenta, fg_color="#2B2B2B", hover_color="#3B3B3B", corner_radius=0, width=0, height=0)
 Boton_Cuenta.grid(row=0, column=1, padx=20, pady=20, sticky="e") 
 Tooltip(Fila, Boton_Cuenta, "Cuenta")
+
+
 
 
 Ventana.mainloop()
