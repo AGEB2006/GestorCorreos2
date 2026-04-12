@@ -42,23 +42,70 @@ info_usuario = CTkLabel(
 )
 info_usuario.grid(row=0, column=0, padx=20, pady=20, sticky="w")
 
+
 Enviar = CTkImage(
+    light_image=Image.open("Lapiz.png"),
+    dark_image=Image.open("Lapiz.png"),
+    size=(30, 30),
+)
+
+frame_visible = False
+frame_redactar = CTkFrame(Msj, fg_color="#202020", corner_radius=10, border_width=1, 
+                           width=500, height=400) 
+frame_redactar.place_forget()
+frame_redactar.grid_propagate(False)
+
+# Correo destinatario
+label_dest = CTkLabel(frame_redactar, text="Para:")
+label_dest.pack(pady=(10, 0))
+
+entry_dest = CTkEntry(frame_redactar, width=300)
+entry_dest.pack(pady=5)
+
+# Asunto
+label_asunto = CTkLabel(frame_redactar, text="Asunto:")
+label_asunto.pack(pady=(10, 0))
+
+entry_asunto = CTkEntry(frame_redactar, width=300)
+entry_asunto.pack(pady=5)
+
+# Contenido
+label_contenido = CTkLabel(frame_redactar, text="Mensaje:")
+label_contenido.pack(pady=(10, 0))
+
+textbox_contenido = CTkTextbox(frame_redactar, width=350, height=150)
+textbox_contenido.pack(pady=10)
+Enviar_Msj = CTkButton(frame_redactar, text="Enviar", fg_color="#1F6AA5", hover_color="#3B3B3B", corner_radius=5, width=10, height=20)
+Enviar_Msj.pack(pady=10)
+def toggle_redactar():
+    global frame_visible
+
+    if not frame_visible:
+        frame_redactar.place(relx=0.5, rely=0.5, anchor="center")
+        frame_visible = True
+    else:
+        frame_redactar.place_forget()
+        frame_visible = False
+
+Boton_Enviar = CTkButton(Fila, text="", image=Enviar, fg_color="#2B2B2B", hover_color="#3B3B3B", corner_radius=0, width=0, height=0)
+Boton_Enviar.grid(row=0, column=0, padx=0, pady=0, sticky="e")
+Boton_Enviar.configure(command=toggle_redactar)
+
+Tooltip(Fila, Boton_Enviar, "Redactar") 
+
+
+Borrador = CTkImage(
     light_image=Image.open("avion2.png"),
     dark_image=Image.open("avion2.png"),
     size=(70, 50),
 )
-Boton_Enviar = CTkButton(Pilar, text="", image=Enviar, fg_color="#2B2B2B", hover_color="#3B3B3B", corner_radius=0, width=0, height=0)
-Boton_Enviar.place(x=10, y=25)
-Tooltip(Pilar, Boton_Enviar, "Enviar")
+Boton_Borrador = CTkButton(Pilar, text="", image=Borrador, fg_color="#2B2B2B", hover_color="#3B3B3B", corner_radius=0, width=0, height=0)
+Boton_Borrador.place(x=10, y=25)
+Tooltip(Pilar, Boton_Borrador, "Borradores")
 
-frame_redactar = CTkFrame(Msj, fg_color="red") 
-frame_redactar.place_forget()
 
-def mostrar_redactar():
 
-    frame_redactar.place(relwidth=1, relheight=1)
 
-Boton_Enviar.configure(command = mostrar_redactar)
 
 
 

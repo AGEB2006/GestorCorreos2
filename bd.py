@@ -49,9 +49,9 @@ def normalizar_tabla():
             cursor.execute("ALTER TABLE Correos ADD COLUMN respuesta_seguridad TEXT")
 
         columna_contrasena = obtener_columna_contrasena(cursor)
-        if columna_contrasena != "contrasena":
+        if columna_contrasena != "contraseña":
             try:
-                cursor.execute(f'ALTER TABLE Correos RENAME COLUMN "{columna_contrasena}" TO contrasena')
+                cursor.execute(f'ALTER TABLE Correos RENAME COLUMN "{columna_contrasena}" TO contraseña')
             except sqlite3.OperationalError:
                 pass
 

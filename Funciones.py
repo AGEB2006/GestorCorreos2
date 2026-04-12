@@ -39,6 +39,9 @@ def enviar_mensaje(remitente_id, destinatario_id, asunto, contenido):
         )
         conexion.commit()
 
+
+frame_visible = False
+
 def obtener_mensajes_recibidos(usuario_id):
     with conectar() as conexion:
         cursor = conexion.cursor()
