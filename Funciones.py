@@ -2,6 +2,7 @@ from customtkinter import *
 from bd import *
 
 def agregar_mensaje(contenedor, texto, tipo="recibido"):
+    Mensaje = CTkFrame(contenedor, fg_color="transparent", border_width=0, corner_radius=0)
     if tipo == "recibido":
         anchor = "w"
         color = "#3B3B3B"

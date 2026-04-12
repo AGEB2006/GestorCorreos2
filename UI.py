@@ -47,9 +47,20 @@ Enviar = CTkImage(
     dark_image=Image.open("avion2.png"),
     size=(70, 50),
 )
-Boton_Enviar = CTkButton(Pilar, text="", image=Enviar, fg_color="#2B2B2B", hover_color="#3B3B3B", corner_radius=0, width=0, height=0, command = lambda: enviar_mensaje(usuario_id, "destinatario_id", "Asunto de prueba", "Contenido del mensaje de prueba"))
+Boton_Enviar = CTkButton(Pilar, text="", image=Enviar, fg_color="#2B2B2B", hover_color="#3B3B3B", corner_radius=0, width=0, height=0)
 Boton_Enviar.place(x=10, y=25)
 Tooltip(Pilar, Boton_Enviar, "Enviar")
+
+frame_redactar = CTkFrame(Msj, fg_color="red") 
+frame_redactar.place_forget()
+
+def mostrar_redactar():
+
+    frame_redactar.place(relwidth=1, relheight=1)
+
+Boton_Enviar.configure(command = mostrar_redactar)
+
+
 
 Recibido = CTkImage(
     light_image=Image.open("recibido.png"),
