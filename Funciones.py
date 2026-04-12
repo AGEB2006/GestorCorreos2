@@ -64,3 +64,15 @@ def eliminar_mensaje(mensaje_id):
             (mensaje_id,)
         )
         conexion.commit()
+
+def guardar_borrador(remitente_id, destinatario, asunto, contenido):
+    with conectar() as conexion:
+        cursor = conexion.cursor()
+        cursor.execute(
+            """
+            INSERT INTO Mensajes (remitente_id, asunto, contenido, tipo)
+            VALUES (?, ?, ?, 'borrador')
+            """,
+            (remitente_id, asunto, contenido)
+        )
+        conexion.commit()

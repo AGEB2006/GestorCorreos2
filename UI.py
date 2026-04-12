@@ -75,8 +75,16 @@ label_contenido.pack(pady=(10, 0))
 
 textbox_contenido = CTkTextbox(frame_redactar, width=350, height=150)
 textbox_contenido.pack(pady=10)
+
 Enviar_Msj = CTkButton(frame_redactar, text="Enviar", fg_color="#1F6AA5", hover_color="#3B3B3B", corner_radius=5, width=10, height=20)
 Enviar_Msj.pack(pady=10)
+
+dest = entry_dest.get()
+asunto = entry_asunto.get()
+contenido = textbox_contenido.get("1.0", "end").strip()
+
+if asunto or contenido:
+    guardar_borrador(usuario_id, dest, asunto, contenido)
 def toggle_redactar():
     global frame_visible
 

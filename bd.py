@@ -154,11 +154,14 @@ def crear_tabla_mensajes():
                 fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 leido INTEGER DEFAULT 0,
                 eliminado INTEGER DEFAULT 0,
+                tipo TEXT DEFAULT 'enviado',
                 FOREIGN KEY(remitente_id) REFERENCES Correos(id),
                 FOREIGN KEY(destinatario_id) REFERENCES Correos(id)
             )
             """
         )
+        
+
 
 
 init_db()
