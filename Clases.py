@@ -17,16 +17,14 @@ class Tooltip(CTkLabel):
         widget.bind("<Enter>", self.mostrar)
         widget.bind("<Leave>", self.ocultar)    
     def mostrar(self, event):
-        self.tooltip.update_idletasks()
-
-        x = self.widget.winfo_rootx() - self.parent.winfo_rootx()
-        y = self.widget.winfo_rooty() - self.parent.winfo_rooty()
-
-        self.tooltip.place(
-            x = x + self.widget.winfo_width() // 2 - self.tooltip.winfo_width() // 2,
-            y = y + self.widget.winfo_height() + - 40
-        )
-        self.tooltip.lift()
+     self.tooltip.update_idletasks()
+     x = self.widget.winfo_x()
+     y = self.widget.winfo_y()
+     self.tooltip.place(
+        x=x + self.widget.winfo_width()//2 - self.tooltip.winfo_width()//2,
+        y=y + self.widget.winfo_height() - 40
+    )
+     self.tooltip.lift()
     def ocultar(self, event):
         self.tooltip.place_forget()
         
