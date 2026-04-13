@@ -18,12 +18,16 @@
   <a target="code" href="///C:/Users/lenovo/Desktop/4to%20Semestre/Topicos%20Avanzados/proyecto%20GC/login.py" type="text/plain"><tt>login.py</tt></a>
 <span class="moduletype">Script</span>  <div class="import">
 imports:
-    <a href="#PIL">PIL</a>
+    <a href="#Clases">Clases</a>
+ &#8226;   <a href="#Funciones">Funciones</a>
+ &#8226;   <a href="#PIL">PIL</a>
  &#8226;   <a href="#PIL.Image">PIL.Image</a>
  &#8226;   <a href="#PIL.ImageTk">PIL.ImageTk</a>
+ &#8226;   <a href="#UI">UI</a>
  &#8226;   <a href="#_collections_abc">_collections_abc</a>
  &#8226;   <a href="#_weakrefset">_weakrefset</a>
  &#8226;   <a href="#abc">abc</a>
+ &#8226;   <a href="#app_utils">app_utils</a>
  &#8226;   <a href="#bd">bd</a>
  &#8226;   <a href="#codecs">codecs</a>
  &#8226;   <a href="#collections">collections</a>
@@ -174,12 +178,12 @@ imports:
  &#8226;   <a href="#re._constants">re._constants</a>
  &#8226;   <a href="#re._parser">re._parser</a>
  &#8226;   <a href="#recuperar">recuperar</a>
+ &#8226;   <a href="#registro">registro</a>
  &#8226;   <a href="#reprlib">reprlib</a>
  &#8226;   <a href="#sre_compile">sre_compile</a>
  &#8226;   <a href="#sre_constants">sre_constants</a>
  &#8226;   <a href="#sre_parse">sre_parse</a>
  &#8226;   <a href="#stat">stat</a>
- &#8226;   <a href="#subprocess">subprocess</a>
  &#8226;   <a href="#sys">sys</a>
  &#8226;   <a href="#tkinter">tkinter</a>
  &#8226;   <a href="#tkinter.messagebox">tkinter.messagebox</a>
@@ -357,11 +361,45 @@ imported by:
 </div>
 
 <div class="node">
+  <a name="Clases"></a>
+  <a target="code" href="///C:/Users/lenovo/Desktop/4to%20Semestre/Topicos%20Avanzados/proyecto%20GC/Clases.py" type="text/plain"><tt>Clases</tt></a>
+<span class="moduletype">SourceModule</span>  <div class="import">
+imports:
+    <a href="#customtkinter">customtkinter</a>
+
+  </div>
+  <div class="import">
+imported by:
+    <a href="#UI">UI</a>
+ &#8226;   <a href="#login.py">login.py</a>
+
+  </div>
+
+</div>
+
+<div class="node">
   <a name="Foundation"></a>
   <a target="code" href="" type="text/plain"><tt>Foundation</tt></a>
 <span class="moduletype">MissingModule</span>  <div class="import">
 imported by:
     <a href="#darkdetect._mac_detect">darkdetect._mac_detect</a>
+
+  </div>
+
+</div>
+
+<div class="node">
+  <a name="Funciones"></a>
+  <a target="code" href="///C:/Users/lenovo/Desktop/4to%20Semestre/Topicos%20Avanzados/proyecto%20GC/Funciones.py" type="text/plain"><tt>Funciones</tt></a>
+<span class="moduletype">SourceModule</span>  <div class="import">
+imports:
+    <a href="#bd">bd</a>
+
+  </div>
+  <div class="import">
+imported by:
+    <a href="#UI">UI</a>
+ &#8226;   <a href="#login.py">login.py</a>
 
   </div>
 
@@ -496,8 +534,10 @@ imported by:
  &#8226;   <a href="#PIL._version">PIL._version</a>
  &#8226;   <a href="#PIL._webp">PIL._webp</a>
  &#8226;   <a href="#PIL.features">PIL.features</a>
+ &#8226;   <a href="#UI">UI</a>
  &#8226;   <a href="#customtkinter.windows.widgets.image.ctk_image">customtkinter.windows.widgets.image.ctk_image</a>
  &#8226;   <a href="#login.py">login.py</a>
+ &#8226;   <a href="#registro">registro</a>
 
   </div>
 
@@ -1178,8 +1218,10 @@ imported by:
  &#8226;   <a href="#PIL.XbmImagePlugin">PIL.XbmImagePlugin</a>
  &#8226;   <a href="#PIL.XpmImagePlugin">PIL.XpmImagePlugin</a>
  &#8226;   <a href="#PIL.features">PIL.features</a>
+ &#8226;   <a href="#UI">UI</a>
  &#8226;   <a href="#customtkinter.windows.widgets.image.ctk_image">customtkinter.windows.widgets.image.ctk_image</a>
  &#8226;   <a href="#login.py">login.py</a>
+ &#8226;   <a href="#registro">registro</a>
 
   </div>
 
@@ -1571,6 +1613,7 @@ imported by:
  &#8226;   <a href="#PIL.SpiderImagePlugin">PIL.SpiderImagePlugin</a>
  &#8226;   <a href="#customtkinter.windows.widgets.image.ctk_image">customtkinter.windows.widgets.image.ctk_image</a>
  &#8226;   <a href="#login.py">login.py</a>
+ &#8226;   <a href="#registro">registro</a>
 
   </div>
 
@@ -2656,6 +2699,32 @@ imported by:
 <span class="moduletype">MissingModule</span>  <div class="import">
 imported by:
     <a href="#darkdetect._mac_detect">darkdetect._mac_detect</a>
+
+  </div>
+
+</div>
+
+<div class="node">
+  <a name="UI"></a>
+  <a target="code" href="///C:/Users/lenovo/Desktop/4to%20Semestre/Topicos%20Avanzados/proyecto%20GC/UI.py" type="text/plain"><tt>UI</tt></a>
+<span class="moduletype">SourceModule</span>  <div class="import">
+imports:
+    <a href="#Clases">Clases</a>
+ &#8226;   <a href="#Funciones">Funciones</a>
+ &#8226;   <a href="#PIL">PIL</a>
+ &#8226;   <a href="#PIL.Image">PIL.Image</a>
+ &#8226;   <a href="#app_utils">app_utils</a>
+ &#8226;   <a href="#bd">bd</a>
+ &#8226;   <a href="#customtkinter">customtkinter</a>
+ &#8226;   <a href="#os">os</a>
+ &#8226;   <a href="#sys">sys</a>
+ &#8226;   <a href="#tkinter">tkinter</a>
+ &#8226;   <a href="#tkinter.messagebox">tkinter.messagebox</a>
+
+  </div>
+  <div class="import">
+imported by:
+    <a href="#login.py">login.py</a>
 
   </div>
 
@@ -4096,6 +4165,28 @@ imported by:
 </div>
 
 <div class="node">
+  <a name="app_utils"></a>
+  <a target="code" href="///C:/Users/lenovo/Desktop/4to%20Semestre/Topicos%20Avanzados/proyecto%20GC/app_utils.py" type="text/plain"><tt>app_utils</tt></a>
+<span class="moduletype">SourceModule</span>  <div class="import">
+imports:
+    <a href="#os">os</a>
+ &#8226;   <a href="#shutil">shutil</a>
+ &#8226;   <a href="#subprocess">subprocess</a>
+ &#8226;   <a href="#sys">sys</a>
+
+  </div>
+  <div class="import">
+imported by:
+    <a href="#UI">UI</a>
+ &#8226;   <a href="#bd">bd</a>
+ &#8226;   <a href="#login.py">login.py</a>
+ &#8226;   <a href="#registro">registro</a>
+
+  </div>
+
+</div>
+
+<div class="node">
   <a name="argparse"></a>
   <a target="code" href="///C:/Users/lenovo/AppData/Local/Python/pythoncore-3.14-64/Lib/argparse.py" type="text/plain"><tt>argparse</tt></a>
 <span class="moduletype">SourceModule</span>  <div class="import">
@@ -5203,7 +5294,8 @@ imported by:
   <a target="code" href="///C:/Users/lenovo/Desktop/4to%20Semestre/Topicos%20Avanzados/proyecto%20GC/bd.py" type="text/plain"><tt>bd</tt></a>
 <span class="moduletype">SourceModule</span>  <div class="import">
 imports:
-    <a href="#hashlib">hashlib</a>
+    <a href="#app_utils">app_utils</a>
+ &#8226;   <a href="#hashlib">hashlib</a>
  &#8226;   <a href="#hmac">hmac</a>
  &#8226;   <a href="#os">os</a>
  &#8226;   <a href="#sqlite3">sqlite3</a>
@@ -5211,8 +5303,11 @@ imports:
   </div>
   <div class="import">
 imported by:
-    <a href="#login.py">login.py</a>
+    <a href="#Funciones">Funciones</a>
+ &#8226;   <a href="#UI">UI</a>
+ &#8226;   <a href="#login.py">login.py</a>
  &#8226;   <a href="#recuperar">recuperar</a>
+ &#8226;   <a href="#registro">registro</a>
 
   </div>
 
@@ -6397,11 +6492,14 @@ imports:
   </div>
   <div class="import">
 imported by:
-    <a href="#customtkinter">customtkinter</a>
+    <a href="#Clases">Clases</a>
+ &#8226;   <a href="#UI">UI</a>
+ &#8226;   <a href="#customtkinter">customtkinter</a>
  &#8226;   <a href="#customtkinter.windows">customtkinter.windows</a>
  &#8226;   <a href="#customtkinter.windows.widgets.core_widget_classes.ctk_base_class">customtkinter.windows.widgets.core_widget_classes.ctk_base_class</a>
  &#8226;   <a href="#login.py">login.py</a>
  &#8226;   <a href="#recuperar">recuperar</a>
+ &#8226;   <a href="#registro">registro</a>
 
   </div>
 
@@ -20167,11 +20265,13 @@ imported by:
  &#8226;   <a href="#PIL._typing">PIL._typing</a>
  &#8226;   <a href="#PIL._util">PIL._util</a>
  &#8226;   <a href="#PIL.features">PIL.features</a>
+ &#8226;   <a href="#UI">UI</a>
  &#8226;   <a href="#_aix_support">_aix_support</a>
  &#8226;   <a href="#_colorize">_colorize</a>
  &#8226;   <a href="#_pyrepl.pager">_pyrepl.pager</a>
  &#8226;   <a href="#_pyrepl.trace">_pyrepl.trace</a>
  &#8226;   <a href="#_strptime">_strptime</a>
+ &#8226;   <a href="#app_utils">app_utils</a>
  &#8226;   <a href="#argparse">argparse</a>
  &#8226;   <a href="#asyncio.base_events">asyncio.base_events</a>
  &#8226;   <a href="#asyncio.base_subprocess">asyncio.base_subprocess</a>
@@ -20276,6 +20376,7 @@ imported by:
  &#8226;   <a href="#pyi_rth__tkinter.py">pyi_rth__tkinter.py</a>
  &#8226;   <a href="#pyi_rth_inspect.py">pyi_rth_inspect.py</a>
  &#8226;   <a href="#random">random</a>
+ &#8226;   <a href="#registro">registro</a>
  &#8226;   <a href="#runpy">runpy</a>
  &#8226;   <a href="#shutil">shutil</a>
  &#8226;   <a href="#socket">socket</a>
@@ -21198,6 +21299,30 @@ imported by:
 </div>
 
 <div class="node">
+  <a name="registro"></a>
+  <a target="code" href="///C:/Users/lenovo/Desktop/4to%20Semestre/Topicos%20Avanzados/proyecto%20GC/registro.py" type="text/plain"><tt>registro</tt></a>
+<span class="moduletype">SourceModule</span>  <div class="import">
+imports:
+    <a href="#PIL">PIL</a>
+ &#8226;   <a href="#PIL.Image">PIL.Image</a>
+ &#8226;   <a href="#PIL.ImageTk">PIL.ImageTk</a>
+ &#8226;   <a href="#app_utils">app_utils</a>
+ &#8226;   <a href="#bd">bd</a>
+ &#8226;   <a href="#customtkinter">customtkinter</a>
+ &#8226;   <a href="#os">os</a>
+ &#8226;   <a href="#tkinter">tkinter</a>
+ &#8226;   <a href="#tkinter.messagebox">tkinter.messagebox</a>
+
+  </div>
+  <div class="import">
+imported by:
+    <a href="#login.py">login.py</a>
+
+  </div>
+
+</div>
+
+<div class="node">
   <a name="reprlib"></a>
   <a target="code" href="///C:/Users/lenovo/AppData/Local/Python/pythoncore-3.14-64/Lib/reprlib.py" type="text/plain"><tt>reprlib</tt></a>
 <span class="moduletype">SourceModule</span>  <div class="import">
@@ -21391,6 +21516,7 @@ imports:
 imported by:
     <a href="#PIL.EpsImagePlugin">PIL.EpsImagePlugin</a>
  &#8226;   <a href="#PIL.ImageShow">PIL.ImageShow</a>
+ &#8226;   <a href="#app_utils">app_utils</a>
  &#8226;   <a href="#argparse">argparse</a>
  &#8226;   <a href="#ctypes.util">ctypes.util</a>
  &#8226;   <a href="#customtkinter.windows.widgets.font.font_manager">customtkinter.windows.widgets.font.font_manager</a>
@@ -21855,6 +21981,7 @@ imported by:
  &#8226;   <a href="#PIL.JpegImagePlugin">PIL.JpegImagePlugin</a>
  &#8226;   <a href="#_aix_support">_aix_support</a>
  &#8226;   <a href="#_pyrepl.pager">_pyrepl.pager</a>
+ &#8226;   <a href="#app_utils">app_utils</a>
  &#8226;   <a href="#asyncio.base_events">asyncio.base_events</a>
  &#8226;   <a href="#asyncio.base_subprocess">asyncio.base_subprocess</a>
  &#8226;   <a href="#asyncio.events">asyncio.events</a>
@@ -21866,7 +21993,6 @@ imported by:
  &#8226;   <a href="#darkdetect._linux_detect">darkdetect._linux_detect</a>
  &#8226;   <a href="#darkdetect._mac_detect">darkdetect._mac_detect</a>
  &#8226;   <a href="#http.server">http.server</a>
- &#8226;   <a href="#login.py">login.py</a>
  &#8226;   <a href="#multiprocessing.popen_spawn_win32">multiprocessing.popen_spawn_win32</a>
  &#8226;   <a href="#multiprocessing.util">multiprocessing.util</a>
  &#8226;   <a href="#numpy.f2py">numpy.f2py</a>
@@ -21899,6 +22025,7 @@ imported by:
  &#8226;   <a href="#PIL._imagingcms">PIL._imagingcms</a>
  &#8226;   <a href="#PIL._typing">PIL._typing</a>
  &#8226;   <a href="#PIL.features">PIL.features</a>
+ &#8226;   <a href="#UI">UI</a>
  &#8226;   <a href="#_aix_support">_aix_support</a>
  &#8226;   <a href="#_ast_unparse">_ast_unparse</a>
  &#8226;   <a href="#_collections_abc">_collections_abc</a>
@@ -21910,6 +22037,7 @@ imported by:
  &#8226;   <a href="#_pyrepl.pager">_pyrepl.pager</a>
  &#8226;   <a href="#_pyrepl.trace">_pyrepl.trace</a>
  &#8226;   <a href="#annotationlib">annotationlib</a>
+ &#8226;   <a href="#app_utils">app_utils</a>
  &#8226;   <a href="#argparse">argparse</a>
  &#8226;   <a href="#ast">ast</a>
  &#8226;   <a href="#asyncio">asyncio</a>
@@ -22397,7 +22525,8 @@ imports:
   </div>
   <div class="import">
 imported by:
-    <a href="#customtkinter">customtkinter</a>
+    <a href="#UI">UI</a>
+ &#8226;   <a href="#customtkinter">customtkinter</a>
  &#8226;   <a href="#customtkinter.windows.ctk_tk">customtkinter.windows.ctk_tk</a>
  &#8226;   <a href="#customtkinter.windows.ctk_toplevel">customtkinter.windows.ctk_toplevel</a>
  &#8226;   <a href="#customtkinter.windows.widgets.appearance_mode.appearance_mode_tracker">customtkinter.windows.widgets.appearance_mode.appearance_mode_tracker</a>
@@ -22422,6 +22551,7 @@ imported by:
  &#8226;   <a href="#customtkinter.windows.widgets.scaling.scaling_tracker">customtkinter.windows.widgets.scaling.scaling_tracker</a>
  &#8226;   <a href="#login.py">login.py</a>
  &#8226;   <a href="#recuperar">recuperar</a>
+ &#8226;   <a href="#registro">registro</a>
  &#8226;   <a href="#tkinter.commondialog">tkinter.commondialog</a>
  &#8226;   <a href="#tkinter.constants">tkinter.constants</a>
  &#8226;   <a href="#tkinter.dialog">tkinter.dialog</a>
@@ -22535,8 +22665,10 @@ imports:
   </div>
   <div class="import">
 imported by:
-    <a href="#login.py">login.py</a>
+    <a href="#UI">UI</a>
+ &#8226;   <a href="#login.py">login.py</a>
  &#8226;   <a href="#recuperar">recuperar</a>
+ &#8226;   <a href="#registro">registro</a>
  &#8226;   <a href="#tkinter">tkinter</a>
  &#8226;   <a href="#tkinter.simpledialog">tkinter.simpledialog</a>
 

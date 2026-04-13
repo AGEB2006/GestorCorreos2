@@ -3,8 +3,10 @@ import hmac
 import os
 import sqlite3
 
+from app_utils import get_database_path
+
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-DB_PATH = os.path.join(BASE_DIR, "BaseDeDatos.db")
+DB_PATH = get_database_path("BaseDeDatos.db")
 HASH_PREFIX = "sha256$"
 
 

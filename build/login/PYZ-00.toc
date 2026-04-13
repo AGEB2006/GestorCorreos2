@@ -1,6 +1,14 @@
 ('C:\\Users\\lenovo\\Desktop\\4to Semestre\\Topicos Avanzados\\proyecto '
  'GC\\build\\login\\PYZ-00.pyz',
- [('PIL',
+ [('Clases',
+   'C:\\Users\\lenovo\\Desktop\\4to Semestre\\Topicos Avanzados\\proyecto '
+   'GC\\Clases.py',
+   'PYMODULE'),
+  ('Funciones',
+   'C:\\Users\\lenovo\\Desktop\\4to Semestre\\Topicos Avanzados\\proyecto '
+   'GC\\Funciones.py',
+   'PYMODULE'),
+  ('PIL',
    'C:\\Users\\lenovo\\AppData\\Local\\Python\\pythoncore-3.14-64\\Lib\\site-packages\\PIL\\__init__.py',
    'PYMODULE'),
   ('PIL.AvifImagePlugin',
@@ -228,6 +236,10 @@
   ('PIL.features',
    'C:\\Users\\lenovo\\AppData\\Local\\Python\\pythoncore-3.14-64\\Lib\\site-packages\\PIL\\features.py',
    'PYMODULE'),
+  ('UI',
+   'C:\\Users\\lenovo\\Desktop\\4to Semestre\\Topicos Avanzados\\proyecto '
+   'GC\\UI.py',
+   'PYMODULE'),
   ('__future__',
    'C:\\Users\\lenovo\\AppData\\Local\\Python\\pythoncore-3.14-64\\Lib\\__future__.py',
    'PYMODULE'),
@@ -284,6 +296,10 @@
    'PYMODULE'),
   ('annotationlib',
    'C:\\Users\\lenovo\\AppData\\Local\\Python\\pythoncore-3.14-64\\Lib\\annotationlib.py',
+   'PYMODULE'),
+  ('app_utils',
+   'C:\\Users\\lenovo\\Desktop\\4to Semestre\\Topicos Avanzados\\proyecto '
+   'GC\\app_utils.py',
    'PYMODULE'),
   ('argparse',
    'C:\\Users\\lenovo\\AppData\\Local\\Python\\pythoncore-3.14-64\\Lib\\argparse.py',
@@ -1417,6 +1433,10 @@
   ('recuperar',
    'C:\\Users\\lenovo\\Desktop\\4to Semestre\\Topicos Avanzados\\proyecto '
    'GC\\recuperar.py',
+   'PYMODULE'),
+  ('registro',
+   'C:\\Users\\lenovo\\Desktop\\4to Semestre\\Topicos Avanzados\\proyecto '
+   'GC\\registro.py',
    'PYMODULE'),
   ('rlcompleter',
    'C:\\Users\\lenovo\\AppData\\Local\\Python\\pythoncore-3.14-64\\Lib\\rlcompleter.py',
