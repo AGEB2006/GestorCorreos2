@@ -1,3 +1,4 @@
+import os
 import sys
 from tkinter import messagebox
 
@@ -14,8 +15,8 @@ from Funciones import (
     guardar_borrador,
     obtener_borrador_por_id,
     obtener_borradores,
-    obtener_mensajes_recibidos,
     obtener_mensajes_enviados,
+    obtener_mensajes_recibidos,
     obtener_papelera,
     restaurar_desde_papelera,
 )
@@ -27,6 +28,16 @@ def obtener_datos_usuario():
     nombre = sys.argv[2] if len(sys.argv) > 2 else "Usuario"
     correo = sys.argv[3] if len(sys.argv) > 3 else ""
     return usuario_id, nombre, correo
+
+
+def cargar_imagen(nombre_archivo, size):
+    if os.path.exists(nombre_archivo):
+        return CTkImage(
+            light_image=Image.open(nombre_archivo),
+            dark_image=Image.open(nombre_archivo),
+            size=size,
+        )
+    return None
 
 
 usuario_id, nombre_usuario, correo_usuario = obtener_datos_usuario()
@@ -59,6 +70,7 @@ info_usuario = CTkLabel(
 info_usuario.grid(row=0, column=0, padx=20, pady=20, sticky="w")
 
 borrador_actual_id = None
+frame_visible = False
 
 
 def limpiar_contenedor_mensajes():
@@ -94,7 +106,24 @@ def mostrar_tarjeta_info(texto):
     agregar_texto_tarjeta(tarjeta, texto)
 
 
+def limpiar_panel_contactos():
+    for widget in lista_contactos.winfo_children():
+        widget.destroy()
+
+
+def cerrar_panel_contactos():
+    frame_contactos.place_forget()
+
+
+def cerrar_paneles_superpuestos():
+    global frame_visible
+    frame_redactar.place_forget()
+    frame_visible = False
+    cerrar_panel_contactos()
+
+
 def mostrar_mensajes_recibidos():
+    cerrar_panel_contactos()
     limpiar_contenedor_mensajes()
     mensajes = obtener_mensajes_recibidos(int(usuario_id)) if str(usuario_id).isdigit() else []
 
@@ -120,6 +149,7 @@ def mostrar_mensajes_recibidos():
 
 
 def mostrar_mensajes_enviados():
+    cerrar_panel_contactos()
     limpiar_contenedor_mensajes()
     mensajes = obtener_mensajes_enviados(int(usuario_id)) if str(usuario_id).isdigit() else []
 
@@ -127,13 +157,25 @@ def mostrar_mensajes_enviados():
         mostrar_tarjeta_info("No tienes mensajes enviados.")
         return
 
-    for _, _, destinatario, asunto, contenido, fecha, _ in mensajes:
+    for mensaje_id, _, destinatario, asunto, contenido, fecha, _ in mensajes:
         tarjeta = crear_tarjeta_mensaje("#24577A")
-        texto = f"Para: {destinatario}\nAsunto: {asunto or '(sin asunto)'}\n\n{contenido or '(vacio)'}\n\n{fecha}"
+        texto = f"Para: {destinatario}\nAsunto: {asunto or '(sin asunto)'}\n\n{contenido or '(vacío)'}\n\n{fecha}"
         agregar_texto_tarjeta(tarjeta, texto)
+        acciones = crear_acciones_tarjeta(tarjeta)
+
+        btn_eliminar = CTkButton(
+            acciones,
+            text="Enviar a papelera",
+            width=140,
+            fg_color="#8B1E1E",
+            hover_color="#6F1818",
+            command=lambda mid=mensaje_id: mover_enviado_a_papelera(mid),
+        )
+        btn_eliminar.pack(side="left")
 
 
 def mostrar_borradores():
+    cerrar_panel_contactos()
     limpiar_contenedor_mensajes()
     borradores = obtener_borradores(int(usuario_id)) if str(usuario_id).isdigit() else []
 
@@ -167,6 +209,7 @@ def mostrar_borradores():
 
 
 def mostrar_papelera():
+    cerrar_panel_contactos()
     limpiar_contenedor_mensajes()
     elementos = obtener_papelera(int(usuario_id)) if str(usuario_id).isdigit() else []
 
@@ -210,76 +253,6 @@ def limpiar_redactor():
     entry_dest.delete(0, "end")
     entry_asunto.delete(0, "end")
     textbox_contenido.delete("1.0", "end")
-
-
-def limpiar_panel_contactos():
-    for widget in lista_contactos.winfo_children():
-        widget.destroy()
-
-
-def cerrar_panel_contactos():
-    frame_contactos.place_forget()
-
-
-def mostrar_contactos():
-    limpiar_panel_contactos()
-    frame_contactos.place(relx=0.5, rely=0.5, anchor="center")
-
-    contactos = obtener_contactos(int(usuario_id)) if str(usuario_id).isdigit() else []
-
-    if not contactos:
-        aviso = CTkLabel(
-            lista_contactos,
-            text="No tienes contactos agregados.\nPuedes agregar uno usando su correo.",
-            justify="center",
-        )
-        aviso.pack(pady=30)
-        return
-
-    for relacion_id, nombre, correo in contactos:
-        tarjeta = CTkFrame(lista_contactos, fg_color="#2F2F2F", corner_radius=10)
-        tarjeta.pack(fill="x", padx=10, pady=6)
-
-        texto = CTkLabel(
-            tarjeta,
-            text=f"{nombre or correo}\n{correo}",
-            justify="left",
-            text_color="white",
-        )
-        texto.pack(side="left", padx=12, pady=10)
-
-        boton_quitar = CTkButton(
-            tarjeta,
-            text="Quitar",
-            width=90,
-            fg_color="#8B1E1E",
-            hover_color="#6F1818",
-            command=lambda rid=relacion_id: quitar_contacto_y_refrescar(rid),
-        )
-        boton_quitar.pack(side="right", padx=12, pady=10)
-
-
-def agregar_contacto_desde_ui():
-    correo_contacto = entry_contacto_correo.get().strip()
-
-    if not correo_contacto:
-        messagebox.showwarning("Correo vacío", "Escribe el correo del contacto.")
-        return
-
-    exito, resultado = agregar_contacto_por_correo(int(usuario_id), correo_contacto)
-    if not exito:
-        messagebox.showerror("No se pudo agregar", resultado)
-        return
-
-    entry_contacto_correo.delete(0, "end")
-    messagebox.showinfo("Contacto agregado", f"Se agregó a {resultado['nombre']} correctamente.")
-    mostrar_contactos()
-
-
-def quitar_contacto_y_refrescar(relacion_id):
-    if eliminar_contacto(relacion_id):
-        messagebox.showinfo("Contacto eliminado", "El contacto se quitó de tu lista.")
-    mostrar_contactos()
 
 
 def preparar_redactor(titulo_boton="Enviar"):
@@ -351,6 +324,13 @@ def mover_mensaje_a_papelera(mensaje_id):
     mostrar_mensajes_recibidos()
 
 
+def mover_enviado_a_papelera(mensaje_id):
+    eliminado = eliminar_mensaje(mensaje_id)
+    if eliminado:
+        messagebox.showinfo("Enviado a papelera", "El mensaje enviado se movió a la papelera.")
+    mostrar_mensajes_enviados()
+
+
 def restaurar_desde_papelera_y_refrescar(mensaje_id):
     restaurado = restaurar_desde_papelera(mensaje_id)
     if restaurado:
@@ -363,6 +343,70 @@ def borrar_definitivo_y_refrescar(mensaje_id):
     if borrado:
         messagebox.showinfo("Elemento eliminado", "El elemento se borró definitivamente.")
     mostrar_papelera()
+
+
+def mostrar_contactos():
+    global frame_visible
+    frame_redactar.place_forget()
+    frame_visible = False
+    limpiar_panel_contactos()
+    frame_contactos.place(relx=0.5, rely=0.5, anchor="center")
+
+    contactos = obtener_contactos(int(usuario_id)) if str(usuario_id).isdigit() else []
+
+    if not contactos:
+        aviso = CTkLabel(
+            lista_contactos,
+            text="No tienes contactos agregados.\nPuedes agregar uno usando su correo.",
+            justify="center",
+        )
+        aviso.pack(pady=30)
+        return
+
+    for relacion_id, nombre, correo in contactos:
+        tarjeta = CTkFrame(lista_contactos, fg_color="#2F2F2F", corner_radius=10)
+        tarjeta.pack(fill="x", padx=10, pady=6)
+
+        texto = CTkLabel(
+            tarjeta,
+            text=f"{nombre or correo}\n{correo}",
+            justify="left",
+            text_color="white",
+        )
+        texto.pack(side="left", padx=12, pady=10)
+
+        boton_quitar = CTkButton(
+            tarjeta,
+            text="Quitar",
+            width=90,
+            fg_color="#8B1E1E",
+            hover_color="#6F1818",
+            command=lambda rid=relacion_id: quitar_contacto_y_refrescar(rid),
+        )
+        boton_quitar.pack(side="right", padx=12, pady=10)
+
+
+def agregar_contacto_desde_ui():
+    correo_contacto = entry_contacto_correo.get().strip()
+
+    if not correo_contacto:
+        messagebox.showwarning("Correo vacío", "Escribe el correo del contacto.")
+        return
+
+    exito, resultado = agregar_contacto_por_correo(int(usuario_id), correo_contacto)
+    if not exito:
+        messagebox.showerror("No se pudo agregar", resultado)
+        return
+
+    entry_contacto_correo.delete(0, "end")
+    messagebox.showinfo("Contacto agregado", f"Se agregó a {resultado['nombre']} correctamente.")
+    mostrar_contactos()
+
+
+def quitar_contacto_y_refrescar(relacion_id):
+    if eliminar_contacto(relacion_id):
+        messagebox.showinfo("Contacto eliminado", "El contacto se quitó de tu lista.")
+    mostrar_contactos()
 
 
 def enviar_desde_ui():
@@ -395,6 +439,7 @@ def toggle_redactar():
     global frame_visible
 
     if not frame_visible:
+        cerrar_panel_contactos()
         borrar_estado_redactor()
         frame_redactar.place(relx=0.5, rely=0.5, anchor="center")
         frame_visible = True
@@ -406,13 +451,14 @@ def toggle_redactar():
     mostrar_borradores()
 
 
-Enviar = CTkImage(
-    light_image=Image.open("Lapiz.png"),
-    dark_image=Image.open("Lapiz.png"),
-    size=(30, 30),
-)
+Enviar = cargar_imagen("Lapiz.png", (30, 30))
+Borrador = cargar_imagen("borrador.webp", (70, 50)) or cargar_imagen("avion2.png", (70, 50))
+Recibido = cargar_imagen("recibido.png", (90, 70))
+Enviados = cargar_imagen("Enviado.png", (80, 60))
+Borrar = cargar_imagen("basura.png", (70, 70))
+Contactos = cargar_imagen("contactos.png", (70, 70))
+Cuenta = cargar_imagen("cuenta.png", (70, 70))
 
-frame_visible = False
 frame_redactar = CTkFrame(
     Msj,
     fg_color="#202020",
@@ -520,21 +566,11 @@ Boton_Enviar.grid(row=0, column=0, padx=0, pady=0, sticky="e")
 Boton_Enviar.configure(command=toggle_redactar)
 Tooltip(Fila, Boton_Enviar, "Redactar")
 
-Borrador = CTkImage(
-    light_image=Image.open("avion2.png"),
-    dark_image=Image.open("avion2.png"),
-    size=(70, 50),
-)
 Boton_Borrador = CTkButton(Pilar, text="", image=Borrador, fg_color="#2B2B2B", hover_color="#3B3B3B", corner_radius=0, width=0, height=0)
 Boton_Borrador.place(x=10, y=25)
 Boton_Borrador.configure(command=mostrar_borradores)
 Tooltip(Pilar, Boton_Borrador, "Borradores")
 
-Recibido = CTkImage(
-    light_image=Image.open("recibido.png"),
-    dark_image=Image.open("recibido.png"),
-    size=(90, 70),
-)
 Boton_Recibido = CTkButton(Pilar, text="", image=Recibido, fg_color="#2B2B2B", hover_color="#3B3B3B", corner_radius=0, width=0, height=0)
 Boton_Recibido.place(x=5, y=100)
 Boton_Recibido.configure(command=mostrar_mensajes_recibidos)
@@ -542,41 +578,27 @@ Tooltip(Pilar, Boton_Recibido, "Recibido")
 
 Boton_Enviados = CTkButton(
     Pilar,
-    text="Enviados",
+    text="",
+    image=Enviados,
     fg_color="#2B2B2B",
     hover_color="#3B3B3B",
     corner_radius=8,
     width=80,
     command=mostrar_mensajes_enviados,
 )
-Boton_Enviados.place(x=10, y=180)
+Boton_Enviados.place(x=3, y=200)
 Tooltip(Pilar, Boton_Enviados, "Enviados")
 
-Borrar = CTkImage(
-    light_image=Image.open("basura.png"),
-    dark_image=Image.open("basura.png"),
-    size=(70, 70),
-)
 Boton_Borrar = CTkButton(Pilar, text="", image=Borrar, fg_color="#2B2B2B", hover_color="#3B3B3B", corner_radius=0, width=0, height=0)
-Boton_Borrar.place(x=10, y=240)
+Boton_Borrar.place(x=10, y=280)
 Boton_Borrar.configure(command=mostrar_papelera)
 Tooltip(Pilar, Boton_Borrar, "Papelera")
 
-Contactos = CTkImage(
-    light_image=Image.open("contactos.png"),
-    dark_image=Image.open("contactos.png"),
-    size=(70, 70),
-)
 Boton_Contactos = CTkButton(Pilar, text="", image=Contactos, fg_color="#2B2B2B", hover_color="#3B3B3B", corner_radius=0, width=0, height=0)
-Boton_Contactos.place(x=10, y=340)
+Boton_Contactos.place(x=10, y=370)
 Boton_Contactos.configure(command=mostrar_contactos)
 Tooltip(Pilar, Boton_Contactos, "Contactos")
 
-Cuenta = CTkImage(
-    light_image=Image.open("cuenta.png"),
-    dark_image=Image.open("cuenta.png"),
-    size=(70, 70),
-)
 Boton_Cuenta = CTkButton(Fila, text="", image=Cuenta, fg_color="#2B2B2B", hover_color="#3B3B3B", corner_radius=0, width=0, height=0)
 Boton_Cuenta.grid(row=0, column=1, padx=20, pady=20, sticky="e")
 Tooltip(Fila, Boton_Cuenta, "Cuenta")
