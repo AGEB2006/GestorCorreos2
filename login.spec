@@ -1,10 +1,14 @@
 # -*- mode: python ; coding: utf-8 -*-
 
+from PyInstaller.utils.hooks import collect_dynamic_libs, collect_submodules
+
+pillow_hiddenimports = collect_submodules('PIL')
+pillow_binaries = collect_dynamic_libs('PIL')
 
 a = Analysis(
     ['login.py'],
     pathex=[],
-    binaries=[],
+    binaries=pillow_binaries,
     datas=[
         ('BaseDeDatos.db', '.'),
         ('basura.png', '.'),
@@ -16,7 +20,18 @@ a = Analysis(
         ('cuenta.png', '.'),
         ('paisaje-ilustracion-atardecer-en-el-bosque-montanas_3840x2160_xtrafondos.com.jpg', '.'),
     ],
-    hiddenimports=['UI', 'registro', 'recuperar', 'Funciones', 'Clases', 'bd', 'app_utils'],
+    hiddenimports=[
+        'UI',
+        'registro',
+        'recuperar',
+        'Funciones',
+        'Clases',
+        'bd',
+        'app_utils',
+        'PIL._imagingtk',
+        'PIL._tkinter_finder',
+        *pillow_hiddenimports,
+    ],
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
