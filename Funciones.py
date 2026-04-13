@@ -37,6 +37,29 @@ def obtener_mensajes_recibidos(usuario_id):
         return cursor.fetchall()
 
 
+def obtener_mensajes_enviados(usuario_id):
+    with conectar() as conexion:
+        cursor = conexion.cursor()
+        cursor.execute(
+            """
+            SELECT
+                m.id,
+                m.destinatario_id,
+                COALESCE(c.nombre, c.correo, 'Desconocido') AS destinatario,
+                m.asunto,
+                m.contenido,
+                m.fecha,
+                m.leido
+            FROM Mensajes m
+            LEFT JOIN Correos c ON c.id = m.destinatario_id
+            WHERE m.remitente_id = ? AND m.eliminado = 0 AND m.tipo = 'enviado'
+            ORDER BY m.fecha DESC
+            """,
+            (usuario_id,),
+        )
+        return cursor.fetchall()
+
+
 def eliminar_mensaje(mensaje_id):
     with conectar() as conexion:
         cursor = conexion.cursor()

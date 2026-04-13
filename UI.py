@@ -15,6 +15,7 @@ from Funciones import (
     obtener_borrador_por_id,
     obtener_borradores,
     obtener_mensajes_recibidos,
+    obtener_mensajes_enviados,
     obtener_papelera,
     restaurar_desde_papelera,
 )
@@ -116,6 +117,20 @@ def mostrar_mensajes_recibidos():
             command=lambda mid=mensaje_id: mover_mensaje_a_papelera(mid),
         )
         btn_eliminar.pack(side="left")
+
+
+def mostrar_mensajes_enviados():
+    limpiar_contenedor_mensajes()
+    mensajes = obtener_mensajes_enviados(int(usuario_id)) if str(usuario_id).isdigit() else []
+
+    if not mensajes:
+        mostrar_tarjeta_info("No tienes mensajes enviados.")
+        return
+
+    for _, _, destinatario, asunto, contenido, fecha, _ in mensajes:
+        tarjeta = crear_tarjeta_mensaje("#24577A")
+        texto = f"Para: {destinatario}\nAsunto: {asunto or '(sin asunto)'}\n\n{contenido or '(vacio)'}\n\n{fecha}"
+        agregar_texto_tarjeta(tarjeta, texto)
 
 
 def mostrar_borradores():
@@ -373,7 +388,7 @@ def enviar_desde_ui():
     frame_visible = False
     borrar_estado_redactor()
     messagebox.showinfo("Mensaje enviado", "El mensaje se envió correctamente.")
-    mostrar_mensajes_recibidos()
+    mostrar_mensajes_enviados()
 
 
 def toggle_redactar():
@@ -525,13 +540,25 @@ Boton_Recibido.place(x=5, y=100)
 Boton_Recibido.configure(command=mostrar_mensajes_recibidos)
 Tooltip(Pilar, Boton_Recibido, "Recibido")
 
+Boton_Enviados = CTkButton(
+    Pilar,
+    text="Enviados",
+    fg_color="#2B2B2B",
+    hover_color="#3B3B3B",
+    corner_radius=8,
+    width=80,
+    command=mostrar_mensajes_enviados,
+)
+Boton_Enviados.place(x=10, y=180)
+Tooltip(Pilar, Boton_Enviados, "Enviados")
+
 Borrar = CTkImage(
     light_image=Image.open("basura.png"),
     dark_image=Image.open("basura.png"),
     size=(70, 70),
 )
 Boton_Borrar = CTkButton(Pilar, text="", image=Borrar, fg_color="#2B2B2B", hover_color="#3B3B3B", corner_radius=0, width=0, height=0)
-Boton_Borrar.place(x=10, y=200)
+Boton_Borrar.place(x=10, y=240)
 Boton_Borrar.configure(command=mostrar_papelera)
 Tooltip(Pilar, Boton_Borrar, "Papelera")
 
@@ -541,7 +568,7 @@ Contactos = CTkImage(
     size=(70, 70),
 )
 Boton_Contactos = CTkButton(Pilar, text="", image=Contactos, fg_color="#2B2B2B", hover_color="#3B3B3B", corner_radius=0, width=0, height=0)
-Boton_Contactos.place(x=10, y=300)
+Boton_Contactos.place(x=10, y=340)
 Boton_Contactos.configure(command=mostrar_contactos)
 Tooltip(Pilar, Boton_Contactos, "Contactos")
 

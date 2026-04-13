@@ -1,13 +1,19 @@
 import hashlib
 import hmac
+import os
 import sqlite3
 
-DB_PATH = "BaseDeDatos.db"
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+DB_PATH = os.path.join(BASE_DIR, "BaseDeDatos.db")
 HASH_PREFIX = "sha256$"
 
 
 def conectar():
     return sqlite3.connect(DB_PATH)
+
+
+def normalizar_correo(correo):
+    return correo.strip().lower()
 
 
 def obtener_columna_contrasena(cursor):
@@ -68,9 +74,13 @@ def normalizar_tabla():
 
 
 def registrar(correo, contrasena, nombre, telefono, pregunta_seguridad, respuesta_seguridad):
+    correo = normalizar_correo(correo)
     try:
         with conectar() as conexion:
             cursor = conexion.cursor()
+            cursor.execute("SELECT 1 FROM Correos WHERE LOWER(correo) = ?", (correo,))
+            if cursor.fetchone():
+                return False
             columna_contrasena = obtener_columna_contrasena(cursor)
             cursor.execute(
                 f"""
@@ -93,11 +103,12 @@ def registrar(correo, contrasena, nombre, telefono, pregunta_seguridad, respuest
 
 
 def obtener_usuario_por_credenciales(correo, contrasena):
+    correo = normalizar_correo(correo)
     with conectar() as conexion:
         cursor = conexion.cursor()
         columna_contrasena = obtener_columna_contrasena(cursor)
         cursor.execute(
-            f'SELECT id, correo, "{columna_contrasena}", nombre FROM Correos WHERE correo = ?',
+            f'SELECT id, correo, "{columna_contrasena}", nombre FROM Correos WHERE LOWER(correo) = ?',
             (correo,),
         )
         usuario = cursor.fetchone()
@@ -121,10 +132,11 @@ def obtener_usuario_por_credenciales(correo, contrasena):
 
 
 def obtener_usuario_por_correo(correo):
+    correo = normalizar_correo(correo)
     with conectar() as conexion:
         cursor = conexion.cursor()
         cursor.execute(
-            "SELECT id, correo, nombre FROM Correos WHERE correo = ?",
+            "SELECT id, correo, nombre FROM Correos WHERE LOWER(correo) = ?",
             (correo,),
         )
         usuario = cursor.fetchone()
@@ -139,10 +151,11 @@ def obtener_usuario_por_correo(correo):
 
 
 def obtener_pregunta_seguridad(correo):
+    correo = normalizar_correo(correo)
     with conectar() as conexion:
         cursor = conexion.cursor()
         cursor.execute(
-            "SELECT pregunta_seguridad FROM Correos WHERE correo = ?",
+            "SELECT pregunta_seguridad FROM Correos WHERE LOWER(correo) = ?",
             (correo,),
         )
         fila = cursor.fetchone()
@@ -153,10 +166,11 @@ def obtener_pregunta_seguridad(correo):
 
 
 def verificar_respuesta_seguridad(correo, respuesta):
+    correo = normalizar_correo(correo)
     with conectar() as conexion:
         cursor = conexion.cursor()
         cursor.execute(
-            "SELECT respuesta_seguridad FROM Correos WHERE correo = ?",
+            "SELECT respuesta_seguridad FROM Correos WHERE LOWER(correo) = ?",
             (correo,),
         )
         fila = cursor.fetchone()
@@ -167,11 +181,12 @@ def verificar_respuesta_seguridad(correo, respuesta):
 
 
 def actualizar_contrasena(correo, nueva_contrasena):
+    correo = normalizar_correo(correo)
     with conectar() as conexion:
         cursor = conexion.cursor()
         columna_contrasena = obtener_columna_contrasena(cursor)
         cursor.execute(
-            f'UPDATE Correos SET "{columna_contrasena}" = ? WHERE correo = ?',
+            f'UPDATE Correos SET "{columna_contrasena}" = ? WHERE LOWER(correo) = ?',
             (hash_contrasena(nueva_contrasena), correo),
         )
         conexion.commit()
@@ -244,10 +259,11 @@ def obtener_contactos(usuario_id):
 
 
 def agregar_contacto_por_correo(usuario_id, correo_contacto):
+    correo_contacto = normalizar_correo(correo_contacto)
     with conectar() as conexion:
         cursor = conexion.cursor()
         cursor.execute(
-            "SELECT id, correo, nombre FROM Correos WHERE correo = ?",
+            "SELECT id, correo, nombre FROM Correos WHERE LOWER(correo) = ?",
             (correo_contacto,),
         )
         contacto = cursor.fetchone()
