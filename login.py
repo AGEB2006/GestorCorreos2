@@ -6,7 +6,7 @@ from tkinter import messagebox
 from customtkinter import *
 from PIL import Image, ImageTk
 
-from app_utils import launch_mode, resource_path
+from app_utils import resource_path
 from bd import obtener_usuario_por_credenciales
 from recuperar import abrir_recuperacion
 
@@ -94,11 +94,15 @@ def ejecutar_login():
             return
 
         login.destroy()
-        launch_mode("ui", usuario["id"], usuario["nombre"], usuario["correo"])
+        from UI import main as main_ui
+
+        main_ui(str(usuario["id"]), usuario["nombre"], usuario["correo"])
 
     def crear_cuenta():
         login.destroy()
-        launch_mode("registro")
+        from registro import main as main_registro
+
+        main_registro()
 
     def recuperar_contrasena():
         abrir_recuperacion(login, correo_entry, contrasena_entry)

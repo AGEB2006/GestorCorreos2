@@ -17,7 +17,7 @@ from Funciones import (
     obtener_papelera,
     restaurar_desde_papelera,
 )
-from app_utils import launch_mode, resource_path
+from app_utils import resource_path
 from bd import agregar_contacto_por_correo, eliminar_contacto, obtener_contactos, obtener_usuario_por_correo
 from customtkinter import *
 from PIL import Image, ImageTk
@@ -364,7 +364,9 @@ def main(usuario_id="", nombre_usuario="Usuario", correo_usuario=""):
             return
 
         Ventana.destroy()
-        launch_mode("login")
+        from login import ejecutar_login
+
+        ejecutar_login()
 
     def mostrar_cuenta():
         nonlocal frame_visible

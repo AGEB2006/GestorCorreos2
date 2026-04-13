@@ -941,6 +941,10 @@
   ('logging',
    'C:\\Users\\lenovo\\AppData\\Local\\Python\\pythoncore-3.14-64\\Lib\\logging\\__init__.py',
    'PYMODULE'),
+  ('login',
+   'C:\\Users\\lenovo\\Desktop\\4to Semestre\\Topicos Avanzados\\proyecto '
+   'GC\\login.py',
+   'PYMODULE'),
   ('lzma',
    'C:\\Users\\lenovo\\AppData\\Local\\Python\\pythoncore-3.14-64\\Lib\\lzma.py',
    'PYMODULE'),

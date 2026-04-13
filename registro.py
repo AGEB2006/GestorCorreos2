@@ -2,7 +2,7 @@ import os
 import tkinter as tk
 from tkinter import messagebox
 
-from app_utils import launch_mode, resource_path
+from app_utils import resource_path
 from customtkinter import *
 from PIL import Image, ImageTk
 
@@ -116,7 +116,9 @@ def main():
 
     def volver_login():
         registro.destroy()
-        launch_mode("login")
+        from login import ejecutar_login
+
+        ejecutar_login()
 
     def registrar_usuario():
         nombre = nombre_entry.get().strip()
