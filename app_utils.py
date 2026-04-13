@@ -20,22 +20,46 @@ def resource_path(relative_path):
     return os.path.join(base_path, relative_path)
 
 
+def get_app_data_dir():
+    candidate_dirs = []
+
+    local_appdata = os.getenv("LOCALAPPDATA")
+    if local_appdata:
+        candidate_dirs.append(os.path.join(local_appdata, "GestorCorreos2"))
+
+    candidate_dirs.append(os.path.join(os.path.expanduser("~"), "GestorCorreos2"))
+    candidate_dirs.append(get_base_dir())
+
+    for app_dir in candidate_dirs:
+        try:
+            os.makedirs(app_dir, exist_ok=True)
+            return app_dir
+        except OSError:
+            continue
+
+    return get_base_dir()
+
+
 def get_database_path(filename="BaseDeDatos.db"):
-    runtime_dir = get_base_dir()
-    target_path = os.path.join(runtime_dir, filename)
+    target_path = os.path.join(get_app_data_dir(), filename)
 
     if os.path.exists(target_path):
         return target_path
 
-    bundled_path = resource_path(filename)
-    if bundled_path != target_path and os.path.exists(bundled_path):
-        shutil.copyfile(bundled_path, target_path)
+    candidate_paths = [
+        os.path.join(get_base_dir(), filename),
+        resource_path(filename),
+    ]
+    for candidate_path in candidate_paths:
+        if candidate_path != target_path and os.path.exists(candidate_path):
+            shutil.copyfile(candidate_path, target_path)
+            break
 
     return target_path
 
 
 def get_session_path(filename="session.json"):
-    return os.path.join(get_base_dir(), filename)
+    return os.path.join(get_app_data_dir(), filename)
 
 
 def guardar_sesion(usuario):

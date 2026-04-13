@@ -388,7 +388,10 @@ def main(usuario_id="", nombre_usuario="Usuario", correo_usuario=""):
 
         destinatario_info = obtener_usuario_por_correo(destinatario)
         if not destinatario_info:
-            messagebox.showerror("Correo no encontrado", "El correo destinatario no existe.")
+            messagebox.showerror(
+                "Correo no encontrado",
+                "El destinatario debe estar registrado en esta misma aplicacion.",
+            )
             return
 
         enviar_mensaje(int(usuario_id), destinatario_info["id"], asunto, contenido)
@@ -398,7 +401,10 @@ def main(usuario_id="", nombre_usuario="Usuario", correo_usuario=""):
         frame_redactar.place_forget()
         frame_visible = False
         borrar_estado_redactor()
-        messagebox.showinfo("Mensaje enviado", "El mensaje se envio correctamente.")
+        messagebox.showinfo(
+            "Mensaje enviado",
+            "El mensaje interno se guardo correctamente y quedo disponible en la aplicacion.",
+        )
         mostrar_mensajes_enviados()
 
     def toggle_redactar():
@@ -428,7 +434,7 @@ def main(usuario_id="", nombre_usuario="Usuario", correo_usuario=""):
     frame_redactar.place_forget()
     frame_redactar.grid_propagate(False)
 
-    label_dest = CTkLabel(frame_redactar, text="Para:")
+    label_dest = CTkLabel(frame_redactar, text="Para (correo registrado en la app):")
     label_dest.pack(pady=(10, 0))
     entry_dest = CTkEntry(frame_redactar, width=300)
     entry_dest.pack(pady=5)
