@@ -20,18 +20,22 @@ from Funciones import (
 from app_utils import launch_mode, resource_path
 from bd import agregar_contacto_por_correo, eliminar_contacto, obtener_contactos, obtener_usuario_por_correo
 from customtkinter import *
-from PIL import Image
+from PIL import Image, ImageTk
 
 
 def cargar_imagen(nombre_archivo, size):
     ruta = resource_path(nombre_archivo)
     if os.path.exists(ruta):
         try:
-            return CTkImage(
-                light_image=Image.open(ruta),
-                dark_image=Image.open(ruta),
-                size=size,
-            )
+            imagen = Image.open(ruta)
+            try:
+                # Validate that ImageTk support is actually available in runtime.
+                prueba = ImageTk.PhotoImage(imagen.resize((1, 1)))
+                del prueba
+            except Exception:
+                return None
+
+            return CTkImage(light_image=imagen, dark_image=imagen, size=size)
         except Exception:
             return None
     return None
@@ -518,7 +522,17 @@ def main(usuario_id="", nombre_usuario="Usuario", correo_usuario=""):
     Boton_Recibido.configure(command=mostrar_mensajes_recibidos)
     Tooltip(Pilar, Boton_Recibido, "Recibido")
 
-    Boton_Enviados = CTkButton(Pilar, text="", image=Enviados, fg_color="#2B2B2B", hover_color="#3B3B3B", corner_radius=8, width=80, command=mostrar_mensajes_enviados)
+    Boton_Enviados = CTkButton(
+        Pilar,
+        text="" if Enviados else "Enviados",
+        image=Enviados,
+        fg_color="#2B2B2B",
+        hover_color="#3B3B3B",
+        corner_radius=8,
+        width=80 if Enviados else 90,
+        height=34 if not Enviados else 0,
+        command=mostrar_mensajes_enviados,
+    )
     Boton_Enviados.place(x=3, y=200)
     Tooltip(Pilar, Boton_Enviados, "Enviados")
 

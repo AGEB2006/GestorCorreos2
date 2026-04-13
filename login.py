@@ -30,7 +30,13 @@ def poner_fondo(ventana, ruta):
         ancho = max(1, ventana.winfo_width())
         alto = max(1, ventana.winfo_height())
         imagen = imagen_original.resize((ancho, alto), Image.LANCZOS)
-        fondo_actual = ImageTk.PhotoImage(imagen)
+        try:
+            fondo_actual = ImageTk.PhotoImage(imagen)
+        except Exception:
+            fondo.configure(image="")
+            fondo.image = None
+            return
+
         fondo.configure(image=fondo_actual)
         fondo.image = fondo_actual
 
