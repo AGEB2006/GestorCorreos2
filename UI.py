@@ -17,7 +17,7 @@ from Funciones import (
     obtener_papelera,
     restaurar_desde_papelera,
 )
-from app_utils import resource_path
+from app_utils import limpiar_sesion, resource_path
 from bd import agregar_contacto_por_correo, eliminar_contacto, obtener_contactos, obtener_usuario_por_correo
 from customtkinter import *
 from PIL import Image, ImageTk
@@ -288,22 +288,22 @@ def main(usuario_id="", nombre_usuario="Usuario", correo_usuario=""):
         mostrar_borradores()
 
     def mover_mensaje_a_papelera(mensaje_id):
-        if eliminar_mensaje(mensaje_id):
+        if eliminar_mensaje(mensaje_id, int(usuario_id)):
             messagebox.showinfo("Mensaje enviado a papelera", "El mensaje se movio a la papelera.")
         mostrar_mensajes_recibidos()
 
     def mover_enviado_a_papelera(mensaje_id):
-        if eliminar_mensaje(mensaje_id):
+        if eliminar_mensaje(mensaje_id, int(usuario_id)):
             messagebox.showinfo("Enviado a papelera", "El mensaje enviado se movio a la papelera.")
         mostrar_mensajes_enviados()
 
     def restaurar_desde_papelera_y_refrescar(mensaje_id):
-        if restaurar_desde_papelera(mensaje_id):
+        if restaurar_desde_papelera(mensaje_id, int(usuario_id)):
             messagebox.showinfo("Elemento restaurado", "El elemento volvio desde la papelera.")
         mostrar_papelera()
 
     def borrar_definitivo_y_refrescar(mensaje_id):
-        if eliminar_definitivamente(mensaje_id):
+        if eliminar_definitivamente(mensaje_id, int(usuario_id)):
             messagebox.showinfo("Elemento eliminado", "El elemento se borro definitivamente.")
         mostrar_papelera()
 
@@ -363,6 +363,7 @@ def main(usuario_id="", nombre_usuario="Usuario", correo_usuario=""):
         if not confirmar:
             return
 
+        limpiar_sesion()
         Ventana.destroy()
         from login import ejecutar_login
 

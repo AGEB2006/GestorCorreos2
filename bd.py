@@ -152,6 +152,24 @@ def obtener_usuario_por_correo(correo):
     return None
 
 
+def obtener_usuario_por_id(usuario_id):
+    with conectar() as conexion:
+        cursor = conexion.cursor()
+        cursor.execute(
+            "SELECT id, correo, nombre FROM Correos WHERE id = ?",
+            (usuario_id,),
+        )
+        usuario = cursor.fetchone()
+
+    if usuario:
+        return {
+            "id": usuario[0],
+            "correo": usuario[1],
+            "nombre": usuario[2] or usuario[1],
+        }
+    return None
+
+
 def obtener_pregunta_seguridad(correo):
     correo = normalizar_correo(correo)
     with conectar() as conexion:
@@ -222,6 +240,61 @@ def crear_tabla_mensajes():
             )
             """
         )
+
+
+def normalizar_tabla_mensajes():
+    with conectar() as conexion:
+        cursor = conexion.cursor()
+        cursor.execute("PRAGMA table_info(Mensajes)")
+        columnas = [columna[1] for columna in cursor.fetchall()]
+
+        if "eliminado_remitente" not in columnas:
+            cursor.execute("ALTER TABLE Mensajes ADD COLUMN eliminado_remitente INTEGER DEFAULT 0")
+            cursor.execute("UPDATE Mensajes SET eliminado_remitente = COALESCE(eliminado, 0)")
+
+        if "eliminado_destinatario" not in columnas:
+            cursor.execute("ALTER TABLE Mensajes ADD COLUMN eliminado_destinatario INTEGER DEFAULT 0")
+            cursor.execute(
+                """
+                UPDATE Mensajes
+                SET eliminado_destinatario = CASE
+                    WHEN tipo = 'borrador' THEN 1
+                    ELSE COALESCE(eliminado, 0)
+                END
+                """
+            )
+
+        if "visible_remitente" not in columnas:
+            cursor.execute("ALTER TABLE Mensajes ADD COLUMN visible_remitente INTEGER DEFAULT 1")
+            cursor.execute("UPDATE Mensajes SET visible_remitente = 1")
+
+        if "visible_destinatario" not in columnas:
+            cursor.execute("ALTER TABLE Mensajes ADD COLUMN visible_destinatario INTEGER DEFAULT 1")
+            cursor.execute(
+                """
+                UPDATE Mensajes
+                SET visible_destinatario = CASE
+                    WHEN tipo = 'borrador' THEN 0
+                    ELSE 1
+                END
+                """
+            )
+
+        cursor.execute(
+            """
+            UPDATE Mensajes
+            SET eliminado_destinatario = 1
+            WHERE tipo = 'borrador'
+            """
+        )
+        cursor.execute(
+            """
+            UPDATE Mensajes
+            SET visible_destinatario = 0
+            WHERE tipo = 'borrador'
+            """
+        )
+        conexion.commit()
 
 
 def crear_tabla_contactos():
@@ -312,4 +385,5 @@ def eliminar_contacto(contacto_relacion_id):
 init_db()
 normalizar_tabla()
 crear_tabla_mensajes()
+normalizar_tabla_mensajes()
 crear_tabla_contactos()

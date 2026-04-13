@@ -6,13 +6,19 @@ from tkinter import messagebox
 from customtkinter import *
 from PIL import Image, ImageTk
 
-from app_utils import resource_path
-from bd import obtener_usuario_por_credenciales
+from app_utils import cargar_sesion, guardar_sesion, limpiar_sesion, resource_path
+from bd import obtener_usuario_por_credenciales, obtener_usuario_por_id
 from recuperar import abrir_recuperacion
 
 set_appearance_mode("dark")
 
 BACKGROUND_PATH = "paisaje-ilustracion-atardecer-en-el-bosque-montanas_3840x2160_xtrafondos.com.jpg"
+
+
+def abrir_ui(usuario):
+    from UI import main as main_ui
+
+    main_ui(str(usuario["id"]), usuario["nombre"], usuario["correo"])
 
 
 def poner_fondo(ventana, ruta):
@@ -46,6 +52,14 @@ def poner_fondo(ventana, ruta):
 
 
 def ejecutar_login():
+    sesion = cargar_sesion()
+    if sesion:
+        usuario = obtener_usuario_por_id(sesion["id"])
+        if usuario and usuario["correo"].lower() == sesion["correo"].lower():
+            abrir_ui(usuario)
+            return
+        limpiar_sesion()
+
     login = CTk()
     login.geometry("1200x700+250+50")
     login.title("Login")
@@ -93,10 +107,9 @@ def ejecutar_login():
             messagebox.showerror("Acceso denegado", "El correo o la contrasena no son correctos.")
             return
 
+        guardar_sesion(usuario)
         login.destroy()
-        from UI import main as main_ui
-
-        main_ui(str(usuario["id"]), usuario["nombre"], usuario["correo"])
+        abrir_ui(usuario)
 
     def crear_cuenta():
         login.destroy()
