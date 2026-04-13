@@ -1,4 +1,5 @@
 import os
+import subprocess
 import sys
 from tkinter import messagebox
 
@@ -115,15 +116,13 @@ def cerrar_panel_contactos():
     frame_contactos.place_forget()
 
 
-def cerrar_paneles_superpuestos():
-    global frame_visible
-    frame_redactar.place_forget()
-    frame_visible = False
-    cerrar_panel_contactos()
+def cerrar_panel_cuenta():
+    frame_cuenta.place_forget()
 
 
 def mostrar_mensajes_recibidos():
     cerrar_panel_contactos()
+    cerrar_panel_cuenta()
     limpiar_contenedor_mensajes()
     mensajes = obtener_mensajes_recibidos(int(usuario_id)) if str(usuario_id).isdigit() else []
 
@@ -150,6 +149,7 @@ def mostrar_mensajes_recibidos():
 
 def mostrar_mensajes_enviados():
     cerrar_panel_contactos()
+    cerrar_panel_cuenta()
     limpiar_contenedor_mensajes()
     mensajes = obtener_mensajes_enviados(int(usuario_id)) if str(usuario_id).isdigit() else []
 
@@ -176,6 +176,7 @@ def mostrar_mensajes_enviados():
 
 def mostrar_borradores():
     cerrar_panel_contactos()
+    cerrar_panel_cuenta()
     limpiar_contenedor_mensajes()
     borradores = obtener_borradores(int(usuario_id)) if str(usuario_id).isdigit() else []
 
@@ -210,6 +211,7 @@ def mostrar_borradores():
 
 def mostrar_papelera():
     cerrar_panel_contactos()
+    cerrar_panel_cuenta()
     limpiar_contenedor_mensajes()
     elementos = obtener_papelera(int(usuario_id)) if str(usuario_id).isdigit() else []
 
@@ -349,6 +351,7 @@ def mostrar_contactos():
     global frame_visible
     frame_redactar.place_forget()
     frame_visible = False
+    cerrar_panel_cuenta()
     limpiar_panel_contactos()
     frame_contactos.place(relx=0.5, rely=0.5, anchor="center")
 
@@ -409,6 +412,26 @@ def quitar_contacto_y_refrescar(relacion_id):
     mostrar_contactos()
 
 
+def cerrar_sesion():
+    confirmar = messagebox.askyesno(
+        "Cerrar sesión",
+        "¿Quieres cerrar la sesión actual y volver al login?",
+    )
+    if not confirmar:
+        return
+
+    Ventana.destroy()
+    subprocess.Popen([sys.executable, "login.py"])
+
+
+def mostrar_cuenta():
+    global frame_visible
+    frame_redactar.place_forget()
+    frame_visible = False
+    cerrar_panel_contactos()
+    frame_cuenta.place(relx=0.5, rely=0.5, anchor="center")
+
+
 def enviar_desde_ui():
     global frame_visible, borrador_actual_id
 
@@ -440,6 +463,7 @@ def toggle_redactar():
 
     if not frame_visible:
         cerrar_panel_contactos()
+        cerrar_panel_cuenta()
         borrar_estado_redactor()
         frame_redactar.place(relx=0.5, rely=0.5, anchor="center")
         frame_visible = True
@@ -561,6 +585,51 @@ boton_cerrar_contactos = CTkButton(
 )
 boton_cerrar_contactos.pack(pady=(0, 12))
 
+frame_cuenta = CTkFrame(
+    Msj,
+    fg_color="#202020",
+    corner_radius=10,
+    border_width=1,
+    width=420,
+    height=280,
+)
+frame_cuenta.place_forget()
+frame_cuenta.pack_propagate(False)
+
+titulo_cuenta = CTkLabel(
+    frame_cuenta,
+    text="Cuenta",
+    font=CTkFont(size=24, weight="bold"),
+)
+titulo_cuenta.pack(pady=(20, 12))
+
+datos_cuenta = CTkLabel(
+    frame_cuenta,
+    text=f"Nombre: {nombre_usuario}\nCorreo: {correo_usuario}\nID: {usuario_id}",
+    justify="left",
+    text_color="white",
+    font=CTkFont(size=16),
+)
+datos_cuenta.pack(pady=(0, 24))
+
+boton_cerrar_sesion = CTkButton(
+    frame_cuenta,
+    text="Cerrar sesión",
+    fg_color="#8B1E1E",
+    hover_color="#6F1818",
+    command=cerrar_sesion,
+)
+boton_cerrar_sesion.pack(pady=(0, 10))
+
+boton_cerrar_cuenta = CTkButton(
+    frame_cuenta,
+    text="Cerrar",
+    fg_color="#5A5A5A",
+    hover_color="#474747",
+    command=cerrar_panel_cuenta,
+)
+boton_cerrar_cuenta.pack()
+
 Boton_Enviar = CTkButton(Fila, text="", image=Enviar, fg_color="#2B2B2B", hover_color="#3B3B3B", corner_radius=0, width=0, height=0)
 Boton_Enviar.grid(row=0, column=0, padx=0, pady=0, sticky="e")
 Boton_Enviar.configure(command=toggle_redactar)
@@ -601,6 +670,7 @@ Tooltip(Pilar, Boton_Contactos, "Contactos")
 
 Boton_Cuenta = CTkButton(Fila, text="", image=Cuenta, fg_color="#2B2B2B", hover_color="#3B3B3B", corner_radius=0, width=0, height=0)
 Boton_Cuenta.grid(row=0, column=1, padx=20, pady=20, sticky="e")
+Boton_Cuenta.configure(command=mostrar_cuenta)
 Tooltip(Fila, Boton_Cuenta, "Cuenta")
 
 mostrar_mensajes_recibidos()
