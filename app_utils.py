@@ -41,4 +41,10 @@ def launch_mode(mode, *args):
 
     command.append(mode)
     command.extend(str(arg) for arg in args)
-    subprocess.Popen(command)
+
+    if is_frozen():
+        # Replace the current process to avoid _MEIPASS temp-dir cleanup conflicts.
+        os.execv(sys.executable, command)
+        return
+
+    subprocess.Popen(command, cwd=get_base_dir())
