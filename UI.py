@@ -69,6 +69,12 @@ def main(usuario_id="", nombre_usuario="Usuario", correo_usuario=""):
     )
     info_usuario.grid(row=0, column=0, padx=20, pady=20, sticky="w")
 
+    barra_superior_derecha = CTkFrame(Fila, fg_color="transparent")
+    barra_superior_derecha.grid(row=0, column=1, padx=20, pady=12, sticky="e")
+
+    menu_lateral = CTkFrame(Pilar, fg_color="transparent")
+    menu_lateral.pack(fill="x", padx=6, pady=20)
+
     borrador_actual_id = None
     frame_visible = False
 
@@ -481,100 +487,107 @@ def main(usuario_id="", nombre_usuario="Usuario", correo_usuario=""):
     boton_cerrar_cuenta.pack()
 
     Boton_Enviar = CTkButton(
-        Fila,
-        text="" if Enviar else "Redactar",
+        barra_superior_derecha,
+        text="Redactar",
         image=Enviar,
-        fg_color="#2B2B2B",
-        hover_color="#3B3B3B",
-        corner_radius=0,
-        width=0 if Enviar else 110,
-        height=0 if Enviar else 36,
+        fg_color="#1F6AA5",
+        hover_color="#18527E",
+        corner_radius=8,
+        width=120,
+        height=36,
+        text_color="white",
     )
-    Boton_Enviar.grid(row=0, column=0, padx=0, pady=0, sticky="e")
+    Boton_Enviar.pack(side="left", padx=(0, 10))
     Boton_Enviar.configure(command=toggle_redactar)
     Tooltip(Fila, Boton_Enviar, "Redactar")
 
     Boton_Borrador = CTkButton(
-        Pilar,
-        text="" if Borrador else "Borradores",
+        menu_lateral,
+        text="Borradores",
         image=Borrador,
-        fg_color="#2B2B2B",
-        hover_color="#3B3B3B",
-        corner_radius=0,
-        width=0 if Borrador else 90,
-        height=0 if Borrador else 34,
+        fg_color="#3A3A3A",
+        hover_color="#4A4A4A",
+        corner_radius=8,
+        width=88,
+        height=42,
+        text_color="white",
     )
-    Boton_Borrador.place(x=10, y=25)
+    Boton_Borrador.pack(fill="x", pady=(0, 10))
     Boton_Borrador.configure(command=mostrar_borradores)
     Tooltip(Pilar, Boton_Borrador, "Borradores")
 
     Boton_Recibido = CTkButton(
-        Pilar,
-        text="" if Recibido else "Recibidos",
+        menu_lateral,
+        text="Recibidos",
         image=Recibido,
-        fg_color="#2B2B2B",
-        hover_color="#3B3B3B",
-        corner_radius=0,
-        width=0 if Recibido else 90,
-        height=0 if Recibido else 34,
+        fg_color="#3A3A3A",
+        hover_color="#4A4A4A",
+        corner_radius=8,
+        width=88,
+        height=42,
+        text_color="white",
     )
-    Boton_Recibido.place(x=5, y=100)
+    Boton_Recibido.pack(fill="x", pady=(0, 10))
     Boton_Recibido.configure(command=mostrar_mensajes_recibidos)
     Tooltip(Pilar, Boton_Recibido, "Recibido")
 
     Boton_Enviados = CTkButton(
-        Pilar,
-        text="" if Enviados else "Enviados",
+        menu_lateral,
+        text="Enviados",
         image=Enviados,
-        fg_color="#2B2B2B",
-        hover_color="#3B3B3B",
+        fg_color="#3A3A3A",
+        hover_color="#4A4A4A",
         corner_radius=8,
-        width=80 if Enviados else 90,
-        height=34 if not Enviados else 0,
+        width=88,
+        height=42,
+        text_color="white",
         command=mostrar_mensajes_enviados,
     )
-    Boton_Enviados.place(x=3, y=200)
+    Boton_Enviados.pack(fill="x", pady=(0, 10))
     Tooltip(Pilar, Boton_Enviados, "Enviados")
 
     Boton_Borrar = CTkButton(
-        Pilar,
-        text="" if Borrar else "Papelera",
+        menu_lateral,
+        text="Papelera",
         image=Borrar,
-        fg_color="#2B2B2B",
-        hover_color="#3B3B3B",
-        corner_radius=0,
-        width=0 if Borrar else 90,
-        height=0 if Borrar else 34,
+        fg_color="#3A3A3A",
+        hover_color="#4A4A4A",
+        corner_radius=8,
+        width=88,
+        height=42,
+        text_color="white",
     )
-    Boton_Borrar.place(x=10, y=280)
+    Boton_Borrar.pack(fill="x", pady=(0, 10))
     Boton_Borrar.configure(command=mostrar_papelera)
     Tooltip(Pilar, Boton_Borrar, "Papelera")
 
     Boton_Contactos = CTkButton(
-        Pilar,
-        text="" if Contactos else "Contactos",
+        menu_lateral,
+        text="Contactos",
         image=Contactos,
-        fg_color="#2B2B2B",
-        hover_color="#3B3B3B",
-        corner_radius=0,
-        width=0 if Contactos else 90,
-        height=0 if Contactos else 34,
+        fg_color="#3A3A3A",
+        hover_color="#4A4A4A",
+        corner_radius=8,
+        width=88,
+        height=42,
+        text_color="white",
     )
-    Boton_Contactos.place(x=10, y=370)
+    Boton_Contactos.pack(fill="x", pady=(0, 10))
     Boton_Contactos.configure(command=mostrar_contactos)
     Tooltip(Pilar, Boton_Contactos, "Contactos")
 
     Boton_Cuenta = CTkButton(
-        Fila,
-        text="" if Cuenta else "Cuenta",
+        barra_superior_derecha,
+        text="Cuenta",
         image=Cuenta,
-        fg_color="#2B2B2B",
-        hover_color="#3B3B3B",
-        corner_radius=0,
-        width=0 if Cuenta else 90,
-        height=0 if Cuenta else 36,
+        fg_color="#5A5A5A",
+        hover_color="#474747",
+        corner_radius=8,
+        width=100,
+        height=36,
+        text_color="white",
     )
-    Boton_Cuenta.grid(row=0, column=1, padx=20, pady=20, sticky="e")
+    Boton_Cuenta.pack(side="left")
     Boton_Cuenta.configure(command=mostrar_cuenta)
     Tooltip(Fila, Boton_Cuenta, "Cuenta")
 
