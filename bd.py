@@ -213,13 +213,6 @@ def actualizar_contrasena(correo, nueva_contrasena):
         return cursor.rowcount > 0
 
 
-def login(correo, contrasena):
-    usuario = obtener_usuario_por_credenciales(correo, contrasena)
-    if usuario:
-        return usuario["id"]
-    return None
-
-
 def crear_tabla_mensajes():
     with conectar() as conexion:
         cursor = conexion.cursor()

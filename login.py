@@ -1,12 +1,9 @@
-import os
 import sys
-import tkinter as tk
 from tkinter import messagebox
 
 from customtkinter import *
-from PIL import Image, ImageTk
 
-from app_utils import cargar_sesion, guardar_sesion, limpiar_sesion, resource_path
+from app_utils import cargar_sesion, guardar_sesion, limpiar_sesion, poner_fondo_imagen
 from bd import obtener_usuario_por_credenciales, obtener_usuario_por_id
 from recuperar import abrir_recuperacion
 
@@ -19,36 +16,6 @@ def abrir_ui(usuario):
     from UI import main as main_ui
 
     main_ui(str(usuario["id"]), usuario["nombre"], usuario["correo"])
-
-
-def poner_fondo(ventana, ruta):
-    ruta_resuelta = resource_path(ruta)
-    if not os.path.exists(ruta_resuelta):
-        return
-
-    fondo = tk.Label(ventana, bd=0, highlightthickness=0, bg="#111111")
-    fondo.place(x=0, y=0, relwidth=1, relheight=1)
-    fondo.lower()
-
-    imagen_original = Image.open(ruta_resuelta).convert("RGBA")
-
-    def actualizar_fondo(_event=None):
-        ancho = max(1, ventana.winfo_width())
-        alto = max(1, ventana.winfo_height())
-        imagen = imagen_original.resize((ancho, alto), Image.LANCZOS)
-        try:
-            fondo_actual = ImageTk.PhotoImage(imagen)
-        except Exception:
-            fondo.configure(image="")
-            fondo.image = None
-            return
-
-        fondo.configure(image=fondo_actual)
-        fondo.image = fondo_actual
-
-    ventana.bind("<Configure>", actualizar_fondo, add="+")
-    ventana.update_idletasks()
-    actualizar_fondo()
 
 
 def ejecutar_login():
@@ -65,7 +32,7 @@ def ejecutar_login():
     login.title("Login")
     login.configure(fg_color="#111111")
 
-    poner_fondo(login, BACKGROUND_PATH)
+    poner_fondo_imagen(login, BACKGROUND_PATH)
 
     contenedor = CTkFrame(login, width=450, height=360, corner_radius=16, fg_color="#FFFFFF")
     contenedor.place(relx=0.5, rely=0.5, anchor="center")

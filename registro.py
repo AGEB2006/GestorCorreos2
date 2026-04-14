@@ -1,10 +1,7 @@
-import os
-import tkinter as tk
 from tkinter import messagebox
 
-from app_utils import resource_path
+from app_utils import poner_fondo_imagen
 from customtkinter import *
-from PIL import Image, ImageTk
 
 from bd import registrar
 
@@ -19,37 +16,13 @@ PREGUNTAS_SEGURIDAD = [
 BACKGROUND_PATH = "paisaje-ilustracion-atardecer-en-el-bosque-montanas_3840x2160_xtrafondos.com.jpg"
 
 
-def poner_fondo(ventana, ruta):
-    ruta_resuelta = resource_path(ruta)
-    if not os.path.exists(ruta_resuelta):
-        return
-
-    fondo = tk.Label(ventana, bd=0, highlightthickness=0, bg="#111111")
-    fondo.place(x=0, y=0, relwidth=1, relheight=1)
-    fondo.lower()
-
-    imagen_original = Image.open(ruta_resuelta).convert("RGBA")
-
-    def actualizar_fondo(_event=None):
-        ancho = max(1, ventana.winfo_width())
-        alto = max(1, ventana.winfo_height())
-        imagen = imagen_original.resize((ancho, alto), Image.LANCZOS)
-        fondo_actual = ImageTk.PhotoImage(imagen)
-        fondo.configure(image=fondo_actual)
-        fondo.image = fondo_actual
-
-    ventana.bind("<Configure>", actualizar_fondo, add="+")
-    ventana.update_idletasks()
-    actualizar_fondo()
-
-
 def main():
     registro = CTk()
     registro.geometry("1200x700+250+50")
     registro.title("Registro")
     registro.configure(fg_color="#111111")
 
-    poner_fondo(registro, BACKGROUND_PATH)
+    poner_fondo_imagen(registro, BACKGROUND_PATH)
 
     contenedor = CTkScrollableFrame(
         registro,

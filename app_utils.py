@@ -3,6 +3,12 @@ import json
 import shutil
 import subprocess
 import sys
+import tkinter as tk
+
+from PIL import Image, ImageTk
+
+
+CONFIG_FILENAME = "app_config.json"
 
 
 def is_frozen():
@@ -18,6 +24,39 @@ def get_base_dir():
 def resource_path(relative_path):
     base_path = getattr(sys, "_MEIPASS", get_base_dir())
     return os.path.join(base_path, relative_path)
+
+
+def poner_fondo_imagen(ventana, ruta, bg_color="#111111"):
+    ruta_resuelta = resource_path(ruta)
+    if not os.path.exists(ruta_resuelta):
+        return
+
+    try:
+        imagen_original = Image.open(ruta_resuelta).convert("RGBA")
+    except Exception:
+        return
+
+    fondo = tk.Label(ventana, bd=0, highlightthickness=0, bg=bg_color)
+    fondo.place(x=0, y=0, relwidth=1, relheight=1)
+    fondo.lower()
+
+    def actualizar_fondo(_event=None):
+        ancho = max(1, ventana.winfo_width())
+        alto = max(1, ventana.winfo_height())
+        imagen = imagen_original.resize((ancho, alto), Image.LANCZOS)
+        try:
+            fondo_actual = ImageTk.PhotoImage(imagen)
+        except Exception:
+            fondo.configure(image="")
+            fondo.image = None
+            return
+
+        fondo.configure(image=fondo_actual)
+        fondo.image = fondo_actual
+
+    ventana.bind("<Configure>", actualizar_fondo, add="+")
+    ventana.update_idletasks()
+    actualizar_fondo()
 
 
 def get_app_data_dir():
@@ -40,7 +79,100 @@ def get_app_data_dir():
     return get_base_dir()
 
 
+def _normalizar_ruta_base_datos(configured_path, filename):
+    ruta = os.path.expandvars(os.path.expanduser((configured_path or "").strip()))
+    if not ruta:
+        return None
+
+    ruta = ruta.strip('"')
+    _, extension = os.path.splitext(ruta)
+    if extension.lower() not in {".db", ".sqlite", ".sqlite3"}:
+        ruta = os.path.join(ruta, filename)
+
+    if not os.path.isabs(ruta):
+        ruta = os.path.abspath(os.path.join(get_base_dir(), ruta))
+
+    return ruta
+
+
+def _obtener_ruta_base_datos_configurada(filename):
+    env_path = os.getenv("GESTOR_CORREOS_DB_PATH")
+    ruta_env = _normalizar_ruta_base_datos(env_path, filename)
+    if ruta_env:
+        return ruta_env
+
+    config_paths = [
+        os.path.join(get_base_dir(), CONFIG_FILENAME),
+        os.path.join(get_app_data_dir(), CONFIG_FILENAME),
+    ]
+
+    for config_path in config_paths:
+        if not os.path.exists(config_path):
+            continue
+
+        try:
+            with open(config_path, "r", encoding="utf-8") as config_file:
+                config = json.load(config_file)
+        except (OSError, ValueError, json.JSONDecodeError):
+            continue
+
+        if not isinstance(config, dict):
+            continue
+
+        configured_path = config.get("database_path") or config.get("db_path")
+        ruta_config = _normalizar_ruta_base_datos(configured_path, filename)
+        if ruta_config:
+            return ruta_config
+
+    return None
+
+
+def _ruta_base_datos_disponible(db_path):
+    parent_dir = os.path.dirname(db_path)
+    if parent_dir:
+        try:
+            os.makedirs(parent_dir, exist_ok=True)
+        except OSError:
+            return False
+
+    if os.path.exists(db_path):
+        try:
+            with open(db_path, "ab"):
+                pass
+        except OSError:
+            return False
+        return True
+
+    if parent_dir and not os.path.isdir(parent_dir):
+        return False
+
+    if parent_dir and not os.access(parent_dir, os.W_OK):
+        return False
+
+    return True
+
+
 def get_database_path(filename="BaseDeDatos.db"):
+    configured_path = _obtener_ruta_base_datos_configurada(filename)
+    if configured_path and _ruta_base_datos_disponible(configured_path):
+        if not os.path.exists(configured_path):
+            candidate_paths = [
+                os.path.join(get_base_dir(), filename),
+                resource_path(filename),
+            ]
+            for candidate_path in candidate_paths:
+                if candidate_path != configured_path and os.path.exists(candidate_path):
+                    try:
+                        shutil.copyfile(candidate_path, configured_path)
+                    except OSError:
+                        pass
+                    break
+
+        return configured_path
+
+    if configured_path:
+        print("[DB] Ruta compartida no disponible, se usara base local.")
+
     target_path = os.path.join(get_app_data_dir(), filename)
 
     if os.path.exists(target_path):
@@ -52,7 +184,10 @@ def get_database_path(filename="BaseDeDatos.db"):
     ]
     for candidate_path in candidate_paths:
         if candidate_path != target_path and os.path.exists(candidate_path):
-            shutil.copyfile(candidate_path, target_path)
+            try:
+                shutil.copyfile(candidate_path, target_path)
+            except OSError:
+                pass
             break
 
     return target_path
