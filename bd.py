@@ -11,7 +11,9 @@ HASH_PREFIX = "sha256$"
 
 
 def conectar():
-    return sqlite3.connect(DB_PATH)
+    conexion = sqlite3.connect(DB_PATH, timeout=30)
+    conexion.execute("PRAGMA busy_timeout = 30000")
+    return conexion
 
 
 def normalizar_correo(correo):

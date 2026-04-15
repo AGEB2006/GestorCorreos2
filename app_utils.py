@@ -9,6 +9,12 @@ from PIL import Image, ImageTk
 
 
 CONFIG_FILENAME = "app_config.json"
+_db_resolution_status = {
+    "requested_configured_path": None,
+    "configured_path_available": None,
+    "used_fallback": False,
+    "final_path": None,
+}
 
 
 def is_frozen():
@@ -153,8 +159,18 @@ def _ruta_base_datos_disponible(db_path):
 
 
 def get_database_path(filename="BaseDeDatos.db"):
+    global _db_resolution_status
+
     configured_path = _obtener_ruta_base_datos_configurada(filename)
+    _db_resolution_status = {
+        "requested_configured_path": configured_path,
+        "configured_path_available": None,
+        "used_fallback": False,
+        "final_path": None,
+    }
+
     if configured_path and _ruta_base_datos_disponible(configured_path):
+        _db_resolution_status["configured_path_available"] = True
         if not os.path.exists(configured_path):
             candidate_paths = [
                 os.path.join(get_base_dir(), filename),
@@ -167,15 +183,18 @@ def get_database_path(filename="BaseDeDatos.db"):
                     except OSError:
                         pass
                     break
-
+        _db_resolution_status["final_path"] = configured_path
         return configured_path
 
     if configured_path:
+        _db_resolution_status["configured_path_available"] = False
+        _db_resolution_status["used_fallback"] = True
         print("[DB] Ruta compartida no disponible, se usara base local.")
 
     target_path = os.path.join(get_app_data_dir(), filename)
 
     if os.path.exists(target_path):
+        _db_resolution_status["final_path"] = target_path
         return target_path
 
     candidate_paths = [
@@ -190,7 +209,13 @@ def get_database_path(filename="BaseDeDatos.db"):
                 pass
             break
 
+    _db_resolution_status["final_path"] = target_path
+
     return target_path
+
+
+def get_database_resolution_status():
+    return dict(_db_resolution_status)
 
 
 def get_session_path(filename="session.json"):

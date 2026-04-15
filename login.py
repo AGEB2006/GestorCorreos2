@@ -6,7 +6,13 @@ from tkinter import messagebox
 from customtkinter import *
 from PIL import Image, ImageTk
 
-from app_utils import cargar_sesion, guardar_sesion, limpiar_sesion, resource_path
+from app_utils import (
+    cargar_sesion,
+    get_database_resolution_status,
+    guardar_sesion,
+    limpiar_sesion,
+    resource_path,
+)
 from bd import obtener_usuario_por_credenciales, obtener_usuario_por_id
 from recuperar import abrir_recuperacion
 
@@ -51,6 +57,16 @@ def poner_fondo(ventana, ruta):
 
 
 def ejecutar_login():
+    estado_db = get_database_resolution_status()
+    ruta_compartida = estado_db.get("requested_configured_path")
+    if ruta_compartida and estado_db.get("used_fallback"):
+        messagebox.showwarning(
+            "Base compartida no disponible",
+            "No se pudo usar la base compartida configurada.\n"
+            "Esta instancia esta usando base local y no compartira mensajes con otros equipos.\n\n"
+            f"Ruta configurada: {ruta_compartida}",
+        )
+
     sesion = cargar_sesion()
     if sesion:
         usuario = obtener_usuario_por_id(sesion["id"])

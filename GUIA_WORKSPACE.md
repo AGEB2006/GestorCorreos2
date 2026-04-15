@@ -153,6 +153,21 @@ Define `Tooltip`, un componente simple que muestra una ayuda visual cuando el cu
 - La base de datos se adapta a cambios de esquema porque `bd.py` revisa columnas faltantes y las agrega.
 - Las contraseñas no se guardan en texto plano para usuarios nuevos; se guardan con hash SHA-256.
 
+## Uso en red (tu laptop como servidor)
+
+Si quieres que varios `.exe` compartan los mismos usuarios y mensajes sin SMTP, usa una sola base de datos en tu laptop y compártela por red.
+
+1. En tu laptop, crea una carpeta compartida (ejemplo: `C:\GestorCorreos`) y da permisos de lectura/escritura a los equipos cliente.
+2. Coloca o deja que se cree ahí la base `BaseDeDatos.db`.
+3. En cada equipo cliente, crea `app_config.json` junto al `.exe` con el mismo contenido base de `app_config.json.example`, apuntando a la ruta UNC de tu laptop.
+4. Ruta ejemplo: `\\NOMBRE-DE-TU-PC\\GestorCorreos\\BaseDeDatos.db`.
+5. Abre la app en dos equipos, registra usuarios distintos y valida que los mensajes aparezcan en ambos.
+
+Notas importantes:
+
+- Si un cliente no puede llegar a la ruta compartida, la app muestra una advertencia y usa base local (eso provoca que no comparta mensajes con los demás).
+- Para reducir errores por concurrencia de varios clientes, la conexión SQLite usa `busy_timeout` y `timeout` ampliados.
+
 ## Resumen corto por archivo
 
 - `login.py`: puerta de entrada.
