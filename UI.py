@@ -44,7 +44,7 @@ def cargar_imagen(nombre_archivo, size):
 def main(usuario_id="", nombre_usuario="Usuario", correo_usuario=""):
     Ventana = CTk()
     Ventana.geometry("1200x700+250+50")
-    Ventana.title(f"Panel de {nombre_usuario}")
+    Ventana.title(f"Correo de {nombre_usuario}")
     Ventana.grid_rowconfigure(1, weight=1)
     Ventana.grid_columnconfigure(1, weight=1)
 
