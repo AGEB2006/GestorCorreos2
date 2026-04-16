@@ -45,7 +45,7 @@ def cargar_imagen(nombre_archivo, size):
 def main(usuario_id="", nombre_usuario="Usuario", correo_usuario=""):
     Ventana = CTk()
     Ventana.geometry("1200x700+250+50")
-    Ventana.title(f"Panel de {nombre_usuario}")
+    Ventana.title(f"Correo de {nombre_usuario}")
     Ventana.grid_rowconfigure(1, weight=1)
     Ventana.grid_columnconfigure(1, weight=1)
 
@@ -80,6 +80,7 @@ def main(usuario_id="", nombre_usuario="Usuario", correo_usuario=""):
     frame_visible = False
     smtp_config_actual = load_smtp_config()
 
+    # UI helpers
     def limpiar_contenedor_mensajes():
         for widget in Contenedor_Msj.winfo_children():
             widget.destroy()
@@ -112,6 +113,48 @@ def main(usuario_id="", nombre_usuario="Usuario", correo_usuario=""):
     def cerrar_panel_cuenta():
         frame_cuenta.place_forget()
 
+    def limpiar_redactor():
+        entry_dest.delete(0, "end")
+        entry_asunto.delete(0, "end")
+        textbox_contenido.delete("1.0", "end")
+
+    def preparar_redactor(titulo_boton="Enviar"):
+        boton_guardar_borrador.configure(text="Guardar borrador")
+        Enviar_Msj.configure(text=titulo_boton)
+
+    def borrar_estado_redactor():
+        nonlocal borrador_actual_id
+        borrador_actual_id = None
+        limpiar_redactor()
+        preparar_redactor()
+
+    # Data actions
+    def eliminar_borrador_y_refrescar(borrador_id):
+        if eliminar_borrador(borrador_id):
+            messagebox.showinfo("Borrador enviado a papelera", "El borrador se movio a la papelera.")
+        mostrar_borradores()
+
+    def mover_mensaje_a_papelera(mensaje_id):
+        if eliminar_mensaje(mensaje_id, int(usuario_id)):
+            messagebox.showinfo("Mensaje enviado a papelera", "El mensaje se movio a la papelera.")
+        mostrar_mensajes_recibidos()
+
+    def mover_enviado_a_papelera(mensaje_id):
+        if eliminar_mensaje(mensaje_id, int(usuario_id)):
+            messagebox.showinfo("Enviado a papelera", "El mensaje enviado se movio a la papelera.")
+        mostrar_mensajes_enviados()
+
+    def restaurar_desde_papelera_y_refrescar(mensaje_id):
+        if restaurar_desde_papelera(mensaje_id, int(usuario_id)):
+            messagebox.showinfo("Elemento restaurado", "El elemento volvio desde la papelera.")
+        mostrar_papelera()
+
+    def borrar_definitivo_y_refrescar(mensaje_id):
+        if eliminar_definitivamente(mensaje_id, int(usuario_id)):
+            messagebox.showinfo("Elemento eliminado", "El elemento se borro definitivamente.")
+        mostrar_papelera()
+
+    # Message views
     def mostrar_mensajes_recibidos():
         cerrar_panel_contactos()
         cerrar_panel_cuenta()
@@ -229,15 +272,7 @@ def main(usuario_id="", nombre_usuario="Usuario", correo_usuario=""):
             )
             btn_borrar.pack(side="left")
 
-    def limpiar_redactor():
-        entry_dest.delete(0, "end")
-        entry_asunto.delete(0, "end")
-        textbox_contenido.delete("1.0", "end")
-
-    def preparar_redactor(titulo_boton="Enviar"):
-        boton_guardar_borrador.configure(text="Guardar borrador")
-        Enviar_Msj.configure(text=titulo_boton)
-
+    # Draft composer
     def cargar_borrador_en_redactor(borrador_id):
         nonlocal frame_visible, borrador_actual_id
 
@@ -256,12 +291,6 @@ def main(usuario_id="", nombre_usuario="Usuario", correo_usuario=""):
         boton_guardar_borrador.configure(text="Actualizar borrador")
         frame_redactar.place(relx=0.5, rely=0.5, anchor="center")
         frame_visible = True
-
-    def borrar_estado_redactor():
-        nonlocal borrador_actual_id
-        borrador_actual_id = None
-        limpiar_redactor()
-        preparar_redactor()
 
     def guardar_borrador_desde_ui():
         nonlocal borrador_actual_id, frame_visible
@@ -284,31 +313,53 @@ def main(usuario_id="", nombre_usuario="Usuario", correo_usuario=""):
         borrar_estado_redactor()
         mostrar_borradores()
 
-    def eliminar_borrador_y_refrescar(borrador_id):
-        if eliminar_borrador(borrador_id):
-            messagebox.showinfo("Borrador enviado a papelera", "El borrador se movio a la papelera.")
-        mostrar_borradores()
+    def enviar_desde_ui():
+        nonlocal frame_visible, borrador_actual_id
+        destinatario = entry_dest.get().strip()
+        asunto = entry_asunto.get().strip()
+        contenido = textbox_contenido.get("1.0", "end").strip()
 
-    def mover_mensaje_a_papelera(mensaje_id):
-        if eliminar_mensaje(mensaje_id, int(usuario_id)):
-            messagebox.showinfo("Mensaje enviado a papelera", "El mensaje se movio a la papelera.")
-        mostrar_mensajes_recibidos()
+        if not destinatario or not asunto or not contenido:
+            messagebox.showwarning("Campos vacios", "Completa destinatario, asunto y mensaje.")
+            return
 
-    def mover_enviado_a_papelera(mensaje_id):
-        if eliminar_mensaje(mensaje_id, int(usuario_id)):
-            messagebox.showinfo("Enviado a papelera", "El mensaje enviado se movio a la papelera.")
+        destinatario_info = obtener_usuario_por_correo(destinatario)
+        if not destinatario_info:
+            messagebox.showerror(
+                "Correo no encontrado",
+                "El destinatario debe estar registrado en esta misma aplicacion.",
+            )
+            return
+
+        enviar_mensaje(int(usuario_id), destinatario_info["id"], asunto, contenido)
+        if borrador_actual_id is not None:
+            eliminar_definitivamente(borrador_actual_id)
+
+        frame_redactar.place_forget()
+        frame_visible = False
+        borrar_estado_redactor()
+        messagebox.showinfo(
+            "Mensaje enviado",
+            "El mensaje interno se guardo correctamente y quedo disponible en la aplicacion.",
+        )
         mostrar_mensajes_enviados()
 
-    def restaurar_desde_papelera_y_refrescar(mensaje_id):
-        if restaurar_desde_papelera(mensaje_id, int(usuario_id)):
-            messagebox.showinfo("Elemento restaurado", "El elemento volvio desde la papelera.")
-        mostrar_papelera()
+    def toggle_redactar():
+        nonlocal frame_visible
+        if not frame_visible:
+            cerrar_panel_contactos()
+            cerrar_panel_cuenta()
+            borrar_estado_redactor()
+            frame_redactar.place(relx=0.5, rely=0.5, anchor="center")
+            frame_visible = True
+            return
 
-    def borrar_definitivo_y_refrescar(mensaje_id):
-        if eliminar_definitivamente(mensaje_id, int(usuario_id)):
-            messagebox.showinfo("Elemento eliminado", "El elemento se borro definitivamente.")
-        mostrar_papelera()
+        frame_redactar.place_forget()
+        frame_visible = False
+        borrar_estado_redactor()
+        mostrar_borradores()
 
+    # Contacts and account
     def mostrar_contactos():
         nonlocal frame_visible
         frame_redactar.place_forget()
@@ -360,6 +411,13 @@ def main(usuario_id="", nombre_usuario="Usuario", correo_usuario=""):
             messagebox.showinfo("Contacto eliminado", "El contacto se quito de tu lista.")
         mostrar_contactos()
 
+    def mostrar_cuenta():
+        nonlocal frame_visible
+        frame_redactar.place_forget()
+        frame_visible = False
+        cerrar_panel_contactos()
+        frame_cuenta.place(relx=0.5, rely=0.5, anchor="center")
+
     def cerrar_sesion():
         confirmar = messagebox.askyesno("Cerrar sesion", "Quieres cerrar la sesion actual y volver al login?")
         if not confirmar:
@@ -378,50 +436,6 @@ def main(usuario_id="", nombre_usuario="Usuario", correo_usuario=""):
         cerrar_panel_contactos()
         frame_cuenta.place(relx=0.5, rely=0.5, anchor="center")
 
-    def guardar_smtp_desde_ui():
-        nonlocal smtp_config_actual
-
-        host = entry_smtp_host.get().strip()
-        puerto_texto = entry_smtp_port.get().strip()
-        usuario = entry_smtp_user.get().strip()
-        contrasena = entry_smtp_pass.get().strip()
-        from_email = entry_smtp_from.get().strip()
-
-        if not host or not puerto_texto or not usuario or not contrasena:
-            messagebox.showwarning(
-                "SMTP incompleto",
-                "Completa host, puerto, usuario y contrasena para activar envio real.",
-            )
-            return
-
-        try:
-            puerto = int(puerto_texto)
-        except ValueError:
-            messagebox.showerror("Puerto invalido", "El puerto SMTP debe ser un numero entero.")
-            return
-
-        if puerto <= 0:
-            messagebox.showerror("Puerto invalido", "El puerto SMTP debe ser mayor a 0.")
-            return
-
-        config_nueva = {
-            "host": host,
-            "port": puerto,
-            "username": usuario,
-            "password": contrasena,
-            "from_email": from_email,
-            "sender_name": nombre_usuario,
-            "use_tls": bool(smtp_tls_var.get()),
-            "use_ssl": bool(smtp_ssl_var.get()),
-        }
-
-        if config_nueva["use_ssl"]:
-            config_nueva["use_tls"] = False
-
-        save_smtp_config(config_nueva)
-        smtp_config_actual = load_smtp_config()
-        messagebox.showinfo("SMTP guardado", "La configuracion SMTP se guardo correctamente.")
-
     def enviar_desde_ui():
         nonlocal frame_visible, borrador_actual_id
         destinatario = entry_dest.get().strip()
@@ -433,50 +447,24 @@ def main(usuario_id="", nombre_usuario="Usuario", correo_usuario=""):
             return
 
         destinatario_info = obtener_usuario_por_correo(destinatario)
-        smtp_config = load_smtp_config()
-
-        enviado_interno = False
-        enviado_smtp = False
-        error_smtp = None
-
-        if destinatario_info:
-            enviar_mensaje(int(usuario_id), destinatario_info["id"], asunto, contenido)
-            enviado_interno = True
-
-        if smtp_configurado(smtp_config):
-            try:
-                enviar_correo_smtp(destinatario, asunto, contenido, smtp_config, reply_to=correo_usuario)
-                enviado_smtp = True
-            except Exception as exc:
-                error_smtp = str(exc)
-        elif not destinatario_info:
+        if not destinatario_info:
             messagebox.showerror(
-                "SMTP no configurado",
-                "Configura SMTP en Cuenta para enviar correos reales a direcciones externas.",
+                "Correo no encontrado",
+                "El destinatario debe estar registrado en esta misma aplicacion.",
             )
             return
 
-        if not enviado_interno and not enviado_smtp:
-            messagebox.showerror("No se pudo enviar", f"Error SMTP: {error_smtp or 'desconocido'}")
-            return
-
+        enviar_mensaje(int(usuario_id), destinatario_info["id"], asunto, contenido)
         if borrador_actual_id is not None:
             eliminar_definitivamente(borrador_actual_id)
 
         frame_redactar.place_forget()
         frame_visible = False
         borrar_estado_redactor()
-
-        if enviado_interno and enviado_smtp:
-            messagebox.showinfo("Mensaje enviado", "Se envio por SMTP y tambien se guardo en la app.")
-        elif enviado_smtp:
-            messagebox.showinfo("Correo enviado", "El correo real se envio correctamente por SMTP.")
-        else:
-            texto = "El mensaje interno se guardo correctamente."
-            if error_smtp:
-                texto += f"\n\nNo se pudo enviar por SMTP: {error_smtp}"
-            messagebox.showinfo("Mensaje enviado", texto)
-
+        messagebox.showinfo(
+            "Mensaje enviado",
+            "El mensaje interno se guardo correctamente y quedo disponible en la aplicacion.",
+        )
         mostrar_mensajes_enviados()
 
     def toggle_redactar():
