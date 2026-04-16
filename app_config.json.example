@@ -1,4 +1,0 @@
-{
-  "database_path": "\\\\PYTHONERO666\\GestorCorreos\\BaseDeDatos.db",
-  "nota": "Crea app_config.json con esta ruta en cada cliente para usar la misma BD compartida."
-}

@@ -21,6 +21,7 @@ from app_utils import limpiar_sesion, resource_path
 from bd import agregar_contacto_por_correo, eliminar_contacto, obtener_contactos, obtener_usuario_por_correo
 from customtkinter import *
 from PIL import Image, ImageTk
+from smtp_utils import enviar_correo_smtp, load_smtp_config, save_smtp_config, smtp_configurado
 
 
 def cargar_imagen(nombre_archivo, size):
@@ -77,6 +78,7 @@ def main(usuario_id="", nombre_usuario="Usuario", correo_usuario=""):
 
     borrador_actual_id = None
     frame_visible = False
+    smtp_config_actual = load_smtp_config()
 
     def limpiar_contenedor_mensajes():
         for widget in Contenedor_Msj.winfo_children():
@@ -376,6 +378,50 @@ def main(usuario_id="", nombre_usuario="Usuario", correo_usuario=""):
         cerrar_panel_contactos()
         frame_cuenta.place(relx=0.5, rely=0.5, anchor="center")
 
+    def guardar_smtp_desde_ui():
+        nonlocal smtp_config_actual
+
+        host = entry_smtp_host.get().strip()
+        puerto_texto = entry_smtp_port.get().strip()
+        usuario = entry_smtp_user.get().strip()
+        contrasena = entry_smtp_pass.get().strip()
+        from_email = entry_smtp_from.get().strip()
+
+        if not host or not puerto_texto or not usuario or not contrasena:
+            messagebox.showwarning(
+                "SMTP incompleto",
+                "Completa host, puerto, usuario y contrasena para activar envio real.",
+            )
+            return
+
+        try:
+            puerto = int(puerto_texto)
+        except ValueError:
+            messagebox.showerror("Puerto invalido", "El puerto SMTP debe ser un numero entero.")
+            return
+
+        if puerto <= 0:
+            messagebox.showerror("Puerto invalido", "El puerto SMTP debe ser mayor a 0.")
+            return
+
+        config_nueva = {
+            "host": host,
+            "port": puerto,
+            "username": usuario,
+            "password": contrasena,
+            "from_email": from_email,
+            "sender_name": nombre_usuario,
+            "use_tls": bool(smtp_tls_var.get()),
+            "use_ssl": bool(smtp_ssl_var.get()),
+        }
+
+        if config_nueva["use_ssl"]:
+            config_nueva["use_tls"] = False
+
+        save_smtp_config(config_nueva)
+        smtp_config_actual = load_smtp_config()
+        messagebox.showinfo("SMTP guardado", "La configuracion SMTP se guardo correctamente.")
+
     def enviar_desde_ui():
         nonlocal frame_visible, borrador_actual_id
         destinatario = entry_dest.get().strip()
@@ -387,24 +433,50 @@ def main(usuario_id="", nombre_usuario="Usuario", correo_usuario=""):
             return
 
         destinatario_info = obtener_usuario_por_correo(destinatario)
-        if not destinatario_info:
+        smtp_config = load_smtp_config()
+
+        enviado_interno = False
+        enviado_smtp = False
+        error_smtp = None
+
+        if destinatario_info:
+            enviar_mensaje(int(usuario_id), destinatario_info["id"], asunto, contenido)
+            enviado_interno = True
+
+        if smtp_configurado(smtp_config):
+            try:
+                enviar_correo_smtp(destinatario, asunto, contenido, smtp_config, reply_to=correo_usuario)
+                enviado_smtp = True
+            except Exception as exc:
+                error_smtp = str(exc)
+        elif not destinatario_info:
             messagebox.showerror(
-                "Correo no encontrado",
-                "El destinatario debe estar registrado en esta misma aplicacion.",
+                "SMTP no configurado",
+                "Configura SMTP en Cuenta para enviar correos reales a direcciones externas.",
             )
             return
 
-        enviar_mensaje(int(usuario_id), destinatario_info["id"], asunto, contenido)
+        if not enviado_interno and not enviado_smtp:
+            messagebox.showerror("No se pudo enviar", f"Error SMTP: {error_smtp or 'desconocido'}")
+            return
+
         if borrador_actual_id is not None:
             eliminar_definitivamente(borrador_actual_id)
 
         frame_redactar.place_forget()
         frame_visible = False
         borrar_estado_redactor()
-        messagebox.showinfo(
-            "Mensaje enviado",
-            "El mensaje interno se guardo correctamente y quedo disponible en la aplicacion.",
-        )
+
+        if enviado_interno and enviado_smtp:
+            messagebox.showinfo("Mensaje enviado", "Se envio por SMTP y tambien se guardo en la app.")
+        elif enviado_smtp:
+            messagebox.showinfo("Correo enviado", "El correo real se envio correctamente por SMTP.")
+        else:
+            texto = "El mensaje interno se guardo correctamente."
+            if error_smtp:
+                texto += f"\n\nNo se pudo enviar por SMTP: {error_smtp}"
+            messagebox.showinfo("Mensaje enviado", texto)
+
         mostrar_mensajes_enviados()
 
     def toggle_redactar():
@@ -434,7 +506,7 @@ def main(usuario_id="", nombre_usuario="Usuario", correo_usuario=""):
     frame_redactar.place_forget()
     frame_redactar.grid_propagate(False)
 
-    label_dest = CTkLabel(frame_redactar, text="Para (correo registrado en la app):")
+    label_dest = CTkLabel(frame_redactar, text="Para (correo de destino):")
     label_dest.pack(pady=(10, 0))
     entry_dest = CTkEntry(frame_redactar, width=300)
     entry_dest.pack(pady=5)
@@ -479,7 +551,7 @@ def main(usuario_id="", nombre_usuario="Usuario", correo_usuario=""):
     boton_cerrar_contactos = CTkButton(frame_contactos, text="Cerrar", fg_color="#5A5A5A", hover_color="#474747", command=cerrar_panel_contactos)
     boton_cerrar_contactos.pack(pady=(0, 12))
 
-    frame_cuenta = CTkFrame(Msj, fg_color="#202020", corner_radius=10, border_width=1, width=420, height=280)
+    frame_cuenta = CTkFrame(Msj, fg_color="#202020", corner_radius=10, border_width=1, width=520, height=620)
     frame_cuenta.place_forget()
     frame_cuenta.pack_propagate(False)
 
@@ -487,13 +559,66 @@ def main(usuario_id="", nombre_usuario="Usuario", correo_usuario=""):
     titulo_cuenta.pack(pady=(20, 12))
 
     datos_cuenta = CTkLabel(frame_cuenta, text=f"Nombre: {nombre_usuario}\nCorreo: {correo_usuario}\nID: {usuario_id}", justify="left", text_color="white", font=CTkFont(size=16))
-    datos_cuenta.pack(pady=(0, 24))
+    datos_cuenta.pack(pady=(0, 12))
+
+    titulo_smtp = CTkLabel(frame_cuenta, text="SMTP (correo real)", font=CTkFont(size=18, weight="bold"))
+    titulo_smtp.pack(pady=(0, 8))
+
+    form_smtp = CTkFrame(frame_cuenta, fg_color="#2B2B2B", corner_radius=8)
+    form_smtp.pack(padx=16, pady=(0, 12), fill="x")
+
+    row_host = CTkFrame(form_smtp, fg_color="transparent")
+    row_host.pack(fill="x", padx=10, pady=(10, 6))
+    CTkLabel(row_host, text="Host:", width=100, anchor="w").pack(side="left")
+    entry_smtp_host = CTkEntry(row_host, width=320)
+    entry_smtp_host.pack(side="left", padx=(8, 0))
+    entry_smtp_host.insert(0, smtp_config_actual.get("host", ""))
+
+    row_port = CTkFrame(form_smtp, fg_color="transparent")
+    row_port.pack(fill="x", padx=10, pady=6)
+    CTkLabel(row_port, text="Puerto:", width=100, anchor="w").pack(side="left")
+    entry_smtp_port = CTkEntry(row_port, width=320)
+    entry_smtp_port.pack(side="left", padx=(8, 0))
+    entry_smtp_port.insert(0, str(smtp_config_actual.get("port", 587)))
+
+    row_user = CTkFrame(form_smtp, fg_color="transparent")
+    row_user.pack(fill="x", padx=10, pady=6)
+    CTkLabel(row_user, text="Usuario SMTP:", width=100, anchor="w").pack(side="left")
+    entry_smtp_user = CTkEntry(row_user, width=320)
+    entry_smtp_user.pack(side="left", padx=(8, 0))
+    entry_smtp_user.insert(0, smtp_config_actual.get("username", ""))
+
+    row_pass = CTkFrame(form_smtp, fg_color="transparent")
+    row_pass.pack(fill="x", padx=10, pady=6)
+    CTkLabel(row_pass, text="Contrasena:", width=100, anchor="w").pack(side="left")
+    entry_smtp_pass = CTkEntry(row_pass, width=320, show="*")
+    entry_smtp_pass.pack(side="left", padx=(8, 0))
+    entry_smtp_pass.insert(0, smtp_config_actual.get("password", ""))
+
+    row_from = CTkFrame(form_smtp, fg_color="transparent")
+    row_from.pack(fill="x", padx=10, pady=6)
+    CTkLabel(row_from, text="From:", width=100, anchor="w").pack(side="left")
+    entry_smtp_from = CTkEntry(row_from, width=320)
+    entry_smtp_from.pack(side="left", padx=(8, 0))
+    entry_smtp_from.insert(0, smtp_config_actual.get("from_email", ""))
+
+    row_flags = CTkFrame(form_smtp, fg_color="transparent")
+    row_flags.pack(fill="x", padx=10, pady=(8, 10))
+    smtp_tls_var = IntVar(value=1 if smtp_config_actual.get("use_tls", True) else 0)
+    smtp_ssl_var = IntVar(value=1 if smtp_config_actual.get("use_ssl", False) else 0)
+    switch_tls = CTkSwitch(row_flags, text="STARTTLS", variable=smtp_tls_var, onvalue=1, offvalue=0)
+    switch_tls.pack(side="left", padx=(0, 12))
+    switch_ssl = CTkSwitch(row_flags, text="SSL", variable=smtp_ssl_var, onvalue=1, offvalue=0)
+    switch_ssl.pack(side="left")
+
+    boton_guardar_smtp = CTkButton(form_smtp, text="Guardar SMTP", command=guardar_smtp_desde_ui)
+    boton_guardar_smtp.pack(padx=10, pady=(0, 10), anchor="e")
 
     boton_cerrar_sesion = CTkButton(frame_cuenta, text="Cerrar sesion", fg_color="#8B1E1E", hover_color="#6F1818", command=cerrar_sesion)
-    boton_cerrar_sesion.pack(pady=(0, 10))
+    boton_cerrar_sesion.pack(pady=(0, 8))
 
     boton_cerrar_cuenta = CTkButton(frame_cuenta, text="Cerrar", fg_color="#5A5A5A", hover_color="#474747", command=cerrar_panel_cuenta)
-    boton_cerrar_cuenta.pack()
+    boton_cerrar_cuenta.pack(pady=(0, 10))
 
     Boton_Enviar = CTkButton(
         barra_superior_derecha,
